@@ -1,16 +1,19 @@
 # dotfiles
 
-Monochrome Arch rice with Hyprland.
+Monochrome Hyprland rice.
 
-## System
-- **WM**: Hyprland
-- **Bar**: Waybar
-- **Launcher**: Wofi
-- **Terminal**: Kitty
-- **Browser**: Zen Browser
-
-## Installation
+## Stack
+hyprland  waybar  wofi  kitty  dunst  nvim
+## Install
 ```bash
 git clone https://github.com/caos-obliquo/dotfiles.git ~/dotfiles
-cd ~/dotfiles/stow_home
-stow */
+cd ~/dotfiles/stow_home && stow */
+Structure
+stow_home/
+├── hypr/
+├── waybar/
+├── wofi/
+├── kitty/
+├── dunst/
+├── nvim/
+└── ...
