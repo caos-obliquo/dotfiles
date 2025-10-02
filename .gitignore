@@ -1,0 +1,8 @@
+*.log
+*_history
+*.secrets
+**/cache/
+**/Cache/
+*~
+*.swp
+*.bak
