@@ -1,4 +1,4 @@
-/* Punpun Monochrome - Balanced Visibility */
+/* Punpun Monochrome - GTK CSS Compliant */
 
 * {
     border: none;
@@ -6,11 +6,16 @@
     font-size: 12px;
     font-weight: 500;
     min-height: 0;
+    transition: all 0.3s ease;
 }
 
 window#waybar {
     background: rgba(10, 10, 10, 0.78);
     border-radius: 12px;
+}
+
+window#waybar:hover {
+    background: rgba(10, 10, 10, 0.85);
 }
 
 #custom-punpun,
@@ -23,12 +28,9 @@ window#waybar {
     padding: 0 12px;
     margin: 0;
     border-radius: 0;
-    border: none;
-    box-shadow: none;
-    transition: color 0.3s ease;
 }
 
-/* Logo - bright white for visibility */
+/* Logo */
 #custom-punpun {
     font-family: 'Noto Sans CJK JP', sans-serif;
     font-size: 15px;
@@ -38,7 +40,12 @@ window#waybar {
     border-right: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-/* Workspaces - better contrast */
+#custom-punpun:hover {
+    color: #cccccc;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* Workspaces */
 #workspaces {
     padding: 0 8px;
 }
@@ -46,26 +53,34 @@ window#waybar {
 #workspaces button {
     padding: 0 10px;
     background: transparent;
-    color: #666666;  /* Brighter than before */
+    color: #666666;
     border-radius: 0;
     font-size: 13px;
     margin: 0;
-    transition: color 0.3s ease;
+    border-bottom: 2px solid transparent;
 }
 
 #workspaces button.active {
-    color: #b99df8;  /* Your subtle purple - only color */
+    color: #ffffff;
     background: transparent;
+    border-bottom: 2px solid #ffffff;
+    padding-top: 0;
+    margin-top: -1px;
 }
 
 #workspaces button:hover {
-    color: #888888;
-    background: transparent;
+    color: #aaaaaa;
+    background: rgba(255, 255, 255, 0.03);
 }
 
-/* Cava - VISUAL FOCUS with more impact */
+#workspaces button.urgent {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.15);
+}
+
+/* Cava */
 #cava {
-    color: #d5d5d5;  /* Bright enough to see */
+    color: #d5d5d5;
     padding: 0 24px;
     font-size: 11px;
     letter-spacing: 2px;
@@ -73,7 +88,11 @@ window#waybar {
     border-left: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-/* MPRIS - CENTER FOCUS */
+window#waybar:hover #cava {
+    color: #ffffff;
+}
+
+/* MPRIS */
 #custom-mpris {
     color: #aaaaaa;
     padding: 0 28px;
@@ -89,13 +108,18 @@ window#waybar {
 
 #custom-mpris.paused {
     color: #777777;
+    font-style: italic;
 }
 
 #custom-mpris.stopped {
     opacity: 0.3;
 }
 
-/* Right modules - keep as is, working perfectly */
+#custom-mpris:hover {
+    color: #ffffff;
+}
+
+/* Right modules base */
 #cpu, #memory, #temperature,
 #network, #pulseaudio, #battery {
     padding: 0 10px;
@@ -105,10 +129,17 @@ window#waybar {
     font-weight: 500;
 }
 
+#cpu:hover, #memory:hover, #temperature:hover,
+#network:hover, #pulseaudio:hover, #battery:hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.05);
+}
+
 #cpu, #memory, #temperature {
     border-left: 1px solid rgba(255, 255, 255, 0.05);
 }
 
+/* Clock */
 #clock {
     color: #ffffff;
     font-weight: 600;
@@ -117,22 +148,116 @@ window#waybar {
     border-left: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-/* Warning states - monochrome only */
-#cpu.critical { color: #1a1a1a; }
-#memory.critical { color: #1a1a1a; }
-#temperature.critical { color: #0a0a0a; font-weight: 700; }
-#battery.critical { color: #2a2a2a; }
-#battery.warning { color: #4a4a4a; }
-#battery.charging { color: #e0e0e0; }
+#clock:hover {
+    background: rgba(255, 255, 255, 0.08);
+    letter-spacing: 0.5px;
+}
 
+/* ============================================ */
+/* INVERSE BRIGHTNESS: Critical = Dark, Normal = Bright */
+/* ============================================ */
+
+/* CPU States - Bright when healthy, darker when struggling */
+#cpu {
+    color: #c5c5c5;  /* Normal: visible */
+}
+
+#cpu.warning {
+    color: #888888;
+    font-weight: 600;
+}
+
+#cpu.critical {
+    color: #555555;  /* Critical: dark but readable */
+    font-weight: 700;
+}
+
+/* Memory States - Same inverse system */
+#memory {
+    color: #c5c5c5;
+}
+
+#memory.warning {
+    color: #888888;
+    font-weight: 600;
+}
+
+#memory.critical {
+    color: #555555;
+    font-weight: 700;
+}
+
+/* Temperature - Inverse brightness */
+#temperature {
+    color: #c5c5c5;
+}
+
+#temperature.warning {
+    color: #888888;
+    font-weight: 600;
+}
+
+#temperature.critical {
+    color: #555555;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+/* Battery - Inverse: Full = Bright, Empty = Dark */
+/* > 50% = Bright (healthy) */
+#battery {
+    color: #c5c5c5;
+}
+
+/* 30-50% = Medium dark */
+#battery.warning {
+    color: #888888;
+    font-weight: 600;
+}
+
+/* < 30% = Dark (low energy visual) */
+#battery.critical {
+    color: #555555;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+/* Charging = Brightest (receiving power) */
+#battery.charging {
+    color: #e5e5e5;
+    font-weight: 600;
+}
+
+/* Network states */
+#network {
+    color: #c5c5c5;
+}
+
+#network.disconnected {
+    color: #666666;
+    font-style: italic;
+}
+
+/* Pulseaudio states */
+#pulseaudio {
+    color: #c5c5c5;
+}
+
+#pulseaudio.muted {
+    color: #666666;
+    text-decoration: line-through;
+}
+
+/* Tooltip */
 tooltip {
-    background: rgba(10, 10, 10, 0.92);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(10, 10, 10, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.15);
     border-radius: 8px;
-    padding: 8px 12px;
+    padding: 10px 14px;
 }
 
 tooltip label {
-    color: #cccccc;
+    color: #e0e0e0;
     font-size: 11px;
+    font-weight: 500;
 }
