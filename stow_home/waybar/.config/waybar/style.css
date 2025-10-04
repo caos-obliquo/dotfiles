@@ -1,136 +1,325 @@
-{
-    "layer": "top",
-    "position": "top",
-    "height": 32,
-    "spacing": 0,
-    "margin-top": 8,
-    "margin-bottom": 0,
-    "margin-left": 8,
-    "margin-right": 8,
-    
-    "modules-left": [
-        "custom/punpun",
-        "hyprland/workspaces",
-        "cava"
-    ],
-    "modules-center": [
-        "custom/mpris"
-    ],
-    "modules-right": [
-        "cpu",
-        "memory",
-        "temperature",
-        "network",
-        "pulseaudio",
-        "battery",
-        "clock"
-    ],
+/* ============================================
+   Punpun Monochrome - Waybar Theme
+   GTK CSS Compliant (Only Supported Properties)
+   ============================================ */
 
-    "custom/punpun": {
-        "format": "   無   ",
-        "tooltip-format": "App Launcher",
-        "on-click": "pkill wofi || wofi --show drun"
-    },
+* {
+    border: none;
+    font-family: 'Iosevka Nerd Font', monospace;
+    font-size: 12px;
+    font-weight: 500;
+    min-height: 0;
+    transition: all 0.3s ease;
+}
 
-    "hyprland/workspaces": {
-        "format": "{icon}",
-        "format-icons": {
-            "1": "一",
-            "2": "二",
-            "3": "三",
-            "4": "四",
-            "5": "五",
-            "6": "六",
-            "7": "七",
-            "8": "八",
-            "9": "九",
-            "10": "十"
-        },
-        "persistent-workspaces": {
-            "*": 5
-        },
-        "on-scroll-up": "hyprctl dispatch workspace e+1",
-        "on-scroll-down": "hyprctl dispatch workspace e-1"
-    },
+/* ============================================
+   Main Window
+   ============================================ */
 
-    "cava": {
-        "framerate": 60,
-        "bars": 20,
-        "method": "pipewire",
-        "format-icons": ["▁", "▂", "▃", "▄", "▅", "▆", "▇", "█"],
-        "hide_on_silence": true,
-        "bar_delimiter": 0
-    },
+window#waybar {
+    background: rgba(10, 10, 10, 0.78);
+    border-radius: 12px;
+}
 
-    "custom/mpris": {
-        "format": "{}",
-        "return-type": "json",
-        "exec": "~/.config/waybar/scripts/waybar-mpris-art",
-        "interval": 1,
-        "max-length": 60,
-        "escape": true,
-        "on-click": "playerctl play-pause",
-        "on-click-right": "playerctl next",
-        "on-click-middle": "playerctl previous",
-        "on-scroll-up": "playerctl volume 0.05+",
-        "on-scroll-down": "playerctl volume 0.05-"
-    },
+window#waybar:hover {
+    background: rgba(10, 10, 10, 0.85);
+}
 
-    "clock": {
-        "format": "{:%H:%M}",
-        "format-alt": "{:%d/%m/%y}",
-        "tooltip-format": "<tt><big>{:%B %Y}</big>\n{calendar}</tt>",
-        "on-click": ""
-    },
+/* ============================================
+   Module Base Styles
+   ============================================ */
 
-    "cpu": {
-        "format": "CPU {usage}%",
-        "interval": 3,
-        "states": {
-            "warning": 70,
-            "critical": 90
-        },
-        "tooltip-format": "Load: {load}"
-    },
+#custom-punpun,
+#workspaces,
+#cava,
+#custom-mpris,
+#cpu,
+#memory,
+#temperature,
+#network,
+#pulseaudio,
+#battery,
+#clock {
+    background: transparent;
+    padding: 0 12px;
+    margin: 0;
+    border-radius: 0;
+}
 
-    "memory": {
-        "format": "MEM {percentage}%",
-        "interval": 5,
-        "states": {
-            "warning": 70,
-            "critical": 90
-        },
-        "tooltip-format": "{used:0.1f}G / {total:0.1f}G"
-    },
+/* ============================================
+   Logo Module
+   ============================================ */
 
-    "temperature": {
-        "format": "{temperatureC}°C",
-        "critical-threshold": 80,
-        "tooltip-format": "CPU Temperature"
-    },
+#custom-punpun {
+    font-family: 'Noto Sans CJK JP', sans-serif;
+    font-size: 15px;
+    font-weight: 900;
+    color: #ffffff;
+    padding: 0 20px;
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+}
 
-    "network": {
-        "format-wifi": "{signalStrength}%",
-        "format-ethernet": "ETH",
-        "format-disconnected": "OFFLINE",
-        "tooltip-format-wifi": "{essid} • {signalStrength}%",
-        "tooltip-format-ethernet": "Connected"
-    },
+#custom-punpun:hover {
+    color: #cccccc;
+    background: rgba(255, 255, 255, 0.05);
+}
 
-    "pulseaudio": {
-        "format": "VOL {volume}%",
-        "format-muted": "MUTED",
-        "on-click": "pactl set-sink-mute @DEFAULT_SINK@ toggle",
-        "tooltip-format": "Volume: {volume}%"
-    },
+/* ============================================
+   Workspaces
+   ============================================ */
 
-    "battery": {
-        "states": {
-            "warning": 30,
-            "critical": 15
-        },
-        "format": "BAT {capacity}%",
-        "format-charging": "CHG {capacity}%",
-        "tooltip-format": "{capacity}% • {time}"
-    }
+#workspaces {
+    padding: 0 8px;
+}
+
+#workspaces button {
+    padding: 0 10px;
+    background: transparent;
+    color: #666666;
+    border-radius: 0;
+    font-size: 13px;
+    margin: 0;
+    border-bottom: 2px solid transparent;
+}
+
+#workspaces button.active {
+    color: #ffffff;
+    background: transparent;
+    border-bottom: 2px solid #ffffff;
+    padding-top: 0;
+    margin-top: -1px;
+}
+
+#workspaces button:hover {
+    color: #aaaaaa;
+    background: rgba(255, 255, 255, 0.03);
+}
+
+#workspaces button.urgent {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.15);
+}
+
+/* ============================================
+   Cava Audio Visualizer
+   ============================================ */
+
+#cava {
+    transition: all 0.15s cubic-bezier(0.4, 0.0, 0.2, 1);
+    color: #d5d5d5;
+    padding: 0 24px;
+    font-size: 11px;
+    letter-spacing: 2px;
+    font-weight: 700;
+    border-left: 1px solid rgba(255, 255, 255, 0.05);
+    opacity: 1;
+}
+
+window#waybar:hover #cava {
+    color: #ffffff;
+}
+
+/* ============================================
+   MPRIS Media Player (CENTER)
+   ============================================ */
+
+#custom-mpris {
+    color: #aaaaaa;
+    padding: 0 20px;
+    font-size: 12px;
+    font-weight: 500;
+    /* Sem min-width - deixa o tamanho natural */
+}
+
+#custom-mpris.playing {
+    color: #ffffff;
+    font-weight: 600;
+}
+
+#custom-mpris.paused {
+    color: #777777;
+    font-style: italic;
+}
+
+#custom-mpris.stopped {
+    opacity: 0.3;
+}
+
+#custom-mpris:hover {
+    color: #ffffff;
+}
+
+/* ============================================
+   System Metrics (RIGHT)
+   ============================================ */
+
+#cpu,
+#memory,
+#temperature,
+#network,
+#pulseaudio,
+#battery {
+    padding: 0 10px;
+    font-size: 11px;
+    letter-spacing: 0.5px;
+    color: #c5c5c5;
+    font-weight: 500;
+}
+
+#cpu:hover,
+#memory:hover,
+#temperature:hover,
+#network:hover,
+#pulseaudio:hover,
+#battery:hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* Separators */
+#cpu,
+#memory,
+#temperature {
+    border-left: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* ============================================
+   CPU States - Inverse Brightness
+   (Darker = More Critical)
+   ============================================ */
+
+#cpu {
+    color: #c5c5c5;
+}
+
+#cpu.warning {
+    color: #888888;
+    font-weight: 600;
+}
+
+#cpu.critical {
+    color: #555555;
+    font-weight: 700;
+}
+
+/* ============================================
+   Memory States
+   ============================================ */
+
+#memory {
+    color: #c5c5c5;
+}
+
+#memory.warning {
+    color: #888888;
+    font-weight: 600;
+}
+
+#memory.critical {
+    color: #555555;
+    font-weight: 700;
+}
+
+/* ============================================
+   Temperature States
+   ============================================ */
+
+#temperature {
+    color: #c5c5c5;
+}
+
+#temperature.warning {
+    color: #888888;
+    font-weight: 600;
+}
+
+#temperature.critical {
+    color: #555555;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+/* ============================================
+   Battery States
+   ============================================ */
+
+#battery {
+    color: #c5c5c5;
+}
+
+#battery.warning {
+    color: #888888;
+    font-weight: 600;
+}
+
+#battery.critical {
+    color: #555555;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+#battery.charging {
+    color: #e5e5e5;
+    font-weight: 600;
+}
+
+/* ============================================
+   Network States
+   ============================================ */
+
+#network {
+    color: #c5c5c5;
+}
+
+#network.disconnected {
+    color: #666666;
+    font-style: italic;
+}
+
+/* ============================================
+   Pulseaudio States
+   ============================================ */
+
+#pulseaudio {
+    color: #c5c5c5;
+}
+
+#pulseaudio.muted {
+    color: #666666;
+    text-decoration: line-through;
+}
+
+/* ============================================
+   Clock
+   ============================================ */
+
+#clock {
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 13px;
+    padding: 0 20px;
+    border-left: 1px solid rgba(255, 255, 255, 0.05);
+    min-width: 85px;
+}
+
+#clock:hover {
+    background: rgba(255, 255, 255, 0.08);
+    letter-spacing: 0.5px;
+}
+
+/* ============================================
+   Tooltip
+   ============================================ */
+
+tooltip {
+    background: rgba(10, 10, 10, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    padding: 10px 14px;
+}
+
+tooltip label {
+    color: #e0e0e0;
+    font-size: 11px;
+    font-weight: 500;
 }
