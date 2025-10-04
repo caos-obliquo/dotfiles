@@ -80,10 +80,10 @@
 # README.md contains further information on how to setup CAVA for JACK.
 #
 ; method = pulse
-; source = auto
+; source = @DEFAULT_SINK@.monitor
 
 ; method = pipewire
-; source = auto
+; source = bluez_output.84_AC_60_72_5B_1C.1.monitor
 
 ; method = alsa
 ; source = hw:Loopback,1
