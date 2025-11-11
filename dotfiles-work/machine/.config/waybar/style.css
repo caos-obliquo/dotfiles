@@ -1,0 +1,76 @@
+/* Waybar Style - Arch Linux Sway - GitHub Dark */
+/* Optimized for long song names & compact right grouping */
+
+* {
+  font-family: "Hack Nerd Font Mono", monospace;
+  font-size: 11px;
+  background-color: #0d1117;
+  color: #c9d1d9;
+  border: none;
+  margin: 0;
+  padding: 0;
+}
+
+window#waybar {
+  background-color: #0d1117;
+  border-bottom: 1px solid #21262d;
+  padding: 0 5px;
+}
+
+/* ===== LEFT: Workspaces ===== */
+#workspaces {
+  padding: 0 5px;
+}
+
+#workspaces button {
+  padding: 0 7px;
+  margin: 0 2px;
+  color: #8b949e;
+  background: transparent;
+}
+
+#workspaces button.focused {
+  color: #58a6ff;
+  font-weight: bold;
+}
+
+#workspaces button.urgent {
+  color: #ff7b72;
+}
+
+#workspaces button:hover {
+  background-color: #21262d;
+}
+
+/* ===== CENTER: ncspot - MAXIMUM SPACE ===== */
+#custom-ncspot {
+  color: #1db954;
+  font-weight: bold;
+  padding: 0 10px;
+  margin: 0;
+}
+
+/* ===== RIGHT: Ultra-compact modules ===== */
+#cpu, #memory, #network, #wireplumber, #battery, #clock {
+  padding: 0 3px;
+  margin: 0;
+}
+
+#cpu { color: #79c0ff; }
+#memory { color: #ffa657; }
+#network { color: #7ee787; }
+#wireplumber { color: #d2a8ff; }
+
+#battery { color: #a5d6ff; }
+#battery.warning { color: #ffa657; }
+#battery.critical { color: #ff7b72; }
+#battery.charging { color: #7ee787; }
+
+#clock { color: #ffa198; }
+
+tooltip {
+  background-color: #161b22;
+  color: #c9d1d9;
+  border: 1px solid #30363d;
+  padding: 5px;
+}
