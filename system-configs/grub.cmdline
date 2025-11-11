@@ -1,2 +1,0 @@
-# Add to GRUB_CMDLINE_LINUX_DEFAULT in /etc/default/grub:
-btusb.enable_autosuspend=0 usbcore.autosuspend=-1 btusb.reset=0 xhci_hcd.quirks=0x0400
