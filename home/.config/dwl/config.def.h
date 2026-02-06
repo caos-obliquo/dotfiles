@@ -129,9 +129,10 @@ static const char *volumedown[]   = { "wpctl", "set-volume", "@DEFAULT_AUDIO_SIN
 static const char *volumeup[]     = { "wpctl", "set-volume", "@DEFAULT_AUDIO_SINK@", "5%+", NULL };
 
 /* Screenshot commands */
-static const char *screenshot_full[]   = { "dwl-screenshot", "full", NULL };
-static const char *screenshot_area[]   = { "dwl-screenshot", "area", NULL };
-static const char *screenshot_window[] = { "dwl-screenshot", "window", NULL };
+static const char *screenshot_full[]      = { "dwl-screenshot", "full", NULL };
+static const char *screenshot_area[]      = { "dwl-screenshot", "area", NULL };
+static const char *screenshot_window[]    = { "dwl-screenshot", "window", NULL };
+static const char *screenshot_current[]   = { "dwl-screenshot", "current", NULL };
 
 static const Key keys[] = {
 	/* Note that Shift changes certain key codes: c -> C, 2 -> at, etc. */
@@ -173,11 +174,11 @@ static const Key keys[] = {
 	{ 0,                         XKB_KEY_F7,                   spawn, {.v = volumedown} },
 	{ 0,                         XKB_KEY_F8,                   spawn, {.v = volumeup} },
 	
-	/* Screenshot - Super+S for area selection */
-	{ MODKEY,                    XKB_KEY_s,          spawn,          {.v = screenshot_area} },
-	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_S,          spawn,          {.v = screenshot_full} },
-	{ MODKEY|WLR_MODIFIER_CTRL,  XKB_KEY_s,          spawn,          {.v = screenshot_window} },
-	
+	/* Screenshot bindings */
+	{ MODKEY,                    XKB_KEY_s,          	   spawn, {.v = screenshot_area} },
+	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_S,          	   spawn, {.v = screenshot_current} },
+	{ MODKEY|WLR_MODIFIER_CTRL,  XKB_KEY_s,          	   spawn, {.v = screenshot_full} },	
+
 	TAGKEYS(          XKB_KEY_1, XKB_KEY_exclam,                     0),
 	TAGKEYS(          XKB_KEY_2, XKB_KEY_at,                         1),
 	TAGKEYS(          XKB_KEY_3, XKB_KEY_numbersign,                 2),

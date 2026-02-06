@@ -1,0 +1,11 @@
+# Secrets
+rescrobbled/config.toml
+rescrobbled/session
+youtui/cookie.txt
+
+# Generated files
+zsh/.zcompdump
+*/.zcompdump
+
+# Backups
+*.backup.*

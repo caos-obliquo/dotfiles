@@ -1,0 +1,61 @@
+# Backup directories
+*backup*/
+*.backup/
+backups/
+
+# Auto-generated configs (don't track these)
+home/.config/mozilla/
+home/.config/dconf/
+home/.config/pulse/
+home/.config/procps/
+
+# Build artifacts and binaries
+*.o
+*.so
+*.a
+*.out
+
+# Compiled binaries (keep source, ignore built binaries)
+home/.config/dwl/dwl
+home/.config/dwlb/dwlb
+home/.config/dwlb-geometry/dwlb
+home/.config/slstatus/slstatus
+home/.config/wmenu/wmenu
+home/.config/wmenu-dwlb/wmenu
+home/.config/wmenu-dwlb/wmenu-run
+
+# Go dependencies and binaries
+home/.config/go/pkg/
+home/.config/go/bin/
+home/.config/*/go.sum
+home/.config/*/vendor/
+home/.config/youtui/youtui
+
+# Editor and system files
+*~
+*.swp
+*.swo
+.DS_Store
+*.log
+
+# Cache directories
+.cache/
+__pycache__/
+*.pyc
+
+# Ignore Go dependencies (the 10k lines in go/pkg/)
+go/
+
+# Ignore compiled C binaries and object files
+*.o
+*.a
+*.so
+
+# Ignore ONLY the compiled binaries (full paths)
+/home/.config/dwl/dwl
+/home/.config/dwlb/dwlb
+/home/.config/dwlb-geometry/dwlb
+/home/.config/slstatus/slstatus
+/home/.config/wmenu/wmenu
+/home/.config/wmenu-dwlb/wmenu
+/home/.config/wmenu-dwlb/wmenu-run

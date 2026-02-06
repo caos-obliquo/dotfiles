@@ -1,0 +1,21 @@
+#!/bin/bash
+# DWL screenshot for Wayland with clipboard support
+
+case "$1" in
+    full)
+        grim - | tee ~/Pictures/screenshot-$(date +%Y%m%d-%H%M%S).png | wl-copy
+        notify-send "Screenshot" "Full screen saved and copied to clipboard"
+        ;;
+    area)
+        grim -g "$(slurp)" - | tee ~/Pictures/screenshot-$(date +%Y%m%d-%H%M%S).png | wl-copy
+        notify-send "Screenshot" "Area saved and copied to clipboard"
+        ;;
+    window)
+        grim -g "$(slurp -d)" - | tee ~/Pictures/screenshot-$(date +%Y%m%d-%H%M%S).png | wl-copy
+        notify-send "Screenshot" "Window saved and copied to clipboard"
+        ;;
+    *)
+        echo "Usage: $0 {full|area|window}"
+        exit 1
+        ;;
+esac
