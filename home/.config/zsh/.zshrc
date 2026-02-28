@@ -75,19 +75,35 @@ export XKB_DEFAULT_VARIANT=abnt2
 # COLORED OUTPUT (Native Tools - No Replacements)
 # =============================================================================
 
-# Remove old aliases first
+# Remove old aliases
 unalias journalctl 2>/dev/null
 unalias dmesg 2>/dev/null
 
-# Colorized logs with ccze (Dracula colors)
+# ccze Dracula functions
 journalctl() {
     command journalctl --no-pager "$@" | ccze -A
 }
 
+# dmesg + ccze colors
 dmesg() {
-    command dmesg "$@" | ccze -A
+    dmesg "$@" | ccze -A
 }
 
+# Native colors for others
+alias ls='ls --color=auto'
+alias grep='grep --color=auto'
+alias diff='diff --color=auto'
+alias ip='ip -color=auto'
+
+# Use less with native color support (less 551+)
+export MANPAGER="less -R --use-color -Dd+208 -Du+c -Ds+y"
+export MANROFFOPT="-c"
+
+# Color mapping:
+# -Dd+o = bold (headers like NAME, OVERVIEW) -> ORANGE (was red)
+# -Du+c = underline (links like zsh, zshroadmap) -> CYAN
+# -Ds+y = standout (search/alert) -> YELLOW
+#
 # Add TERM for pacman colored output
 export TERM=xterm-256color
 
@@ -96,9 +112,6 @@ export SYSTEMD_COLORS=true
 
 # Long listing with colors
 alias ll='ls -la'
-
-# Colored grep
-alias grep='grep --color=auto'
 
 # Editor aliases
 alias vim='nvim'
