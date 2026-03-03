@@ -1,0 +1,69 @@
+# DRACULA SEMANTIC SCHEME
+# Tier 1 SIGNAL    — must scream
+# Tier 2 STRUCTURE — recede, repeated on every line
+# Tier 3 DATA      — readable, meaningful
+
+error           bold red
+deny            bold red
+bad             bold red
+miss            red
+
+warning         yellow
+warn            yellow
+
+good            bold green
+keyword         bold green
+get             bold green
+post            bold green
+put             bold green
+
+date            white
+host            white
+default         white
+unknown         white
+repeat          white
+
+process         bold magenta
+service         bold magenta
+signal          bold magenta
+
+pid             cyan
+pid-sqbr        cyan
+uri             cyan
+dir             cyan
+chain           cyan
+prot            cyan
+ftpcodes        cyan
+
+user            bold yellow
+email           bold yellow
+percentage      bold yellow
+hit             bold yellow
+
+mac             magenta
+address         magenta
+numbers         magenta
+version         magenta
+size            magenta
+
+debug           black
+field           black
+ident           black
+ctype           black
+system          black
+incoming        black
+outgoing        black
+uniqn           black
+refresh         black
+swapfail        black
+direct          black
+parent          black
+create          black
+swapin          black
+swapout         black
+release         black
+swapnum         black
+httpcodes       black
+getsize         black
+gettime         black
+subject         black
