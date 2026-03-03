@@ -1,0 +1,7 @@
+#!/bin/bash
+exec <&-
+swaybg -i ~/walls/wall3.jpg -m fill &
+dwlb -font "JetBrainsMono Nerd Font:size=16" -no-ipc -no-hidden &
+sleep 0.5
+~/.local/bin/dwlb-status.sh | dwlb -status-stdin all &
+wait
