@@ -1,0 +1,10 @@
+#!/bin/bash
+cliphist list | wmenu -c -l 15 \
+  -N 282a36 \
+  -n f8f8f2 \
+  -S bd93f9 \
+  -s 282a36 \
+  -M 44475a \
+  -m f8f8f2 \
+  -f "JetBrainsMono Nerd Font:size=14" \
+  | cliphist decode | wl-copy
