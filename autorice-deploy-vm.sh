@@ -96,11 +96,14 @@ setup_pacman() {
 
     sudo cp /etc/pacman.conf /etc/pacman.conf.backup
 
-    # Enable [extra] if disabled (fresh archinstall sometimes skips it)
+    # Ensure [extra] repository is enabled — archinstall sometimes leaves it commented
     if grep -q '^#\[extra\]' /etc/pacman.conf; then
         sudo sed -i 's/^#\[extra\]/[extra]/' /etc/pacman.conf
-        sudo sed -i '/^\[extra\]/,/^Include/{s/^#Include/Include/}' /etc/pacman.conf
+        sudo sed -i 's/^#Include = /etc\/pacman.d\/mirrorlist/Include = \/etc\/pacman.d\/mirrorlist/' /etc/pacman.conf
         log "[extra] repository enabled"
+    elif ! grep -q '^\[extra\]' /etc/pacman.conf; then
+        printf '\n[extra]\nInclude = /etc/pacman.d/mirrorlist\n' | sudo tee -a /etc/pacman.conf >/dev/null
+        log "[extra] repository appended"
     fi
 
     sudo sed -i 's/^#ParallelDownloads/ParallelDownloads/' /etc/pacman.conf
@@ -165,9 +168,48 @@ setup_vm_guest() {
 install_wayland_stack() {
     section "Installing Wayland Stack"
 
+    # Try official repos first
+    if pacman -Ss wlroots &>/dev/null; then
+        sudo pacman -S --needed --noconfirm \
+            wayland wayland-protocols \
+            wlroots \
+            libinput \
+            libxkbcommon \
+            xorg-xwayland \
+            xcb-util-wm \
+            pixman \
+            pkgconf \
+            fcft \
+            meson ninja || error "Wayland stack failed"
+    else
+        warn "wlroots not in repos — building from source"
+        build_wlroots_from_source
+    fi
+
+    success "Wayland stack installed"
+}
+
+# ============================================
+# Build wlroots from source (fallback)
+# ============================================
+
+build_wlroots_from_source() {
+    section "Building wlroots from source"
+
+    mkdir -p "$BUILDS_DIR"
+    cd "$BUILDS_DIR"
+
+    if [ -d "wlroots" ]; then
+        git -C wlroots pull || true
+    else
+        git clone https://gitlab.freedesktop.org/wlroots/wlroots.git
+    fi
+
+    cd wlroots
+
+    # Install build deps first
     sudo pacman -S --needed --noconfirm \
         wayland wayland-protocols \
-        wlroots \
         libinput \
         libxkbcommon \
         xorg-xwayland \
@@ -175,9 +217,15 @@ install_wayland_stack() {
         pixman \
         pkgconf \
         fcft \
-        meson ninja || error "Wayland stack failed"
+        meson ninja || error "wlroots build deps failed"
 
-    success "Wayland stack installed"
+    # Build wlroots
+    rm -rf build
+    meson setup build
+    ninja -C build
+    sudo ninja -C build install
+
+    success "wlroots built and installed from source"
 }
 
 # ============================================
