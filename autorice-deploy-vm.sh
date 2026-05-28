@@ -117,8 +117,7 @@ install_base_system() {
     sudo pacman -S --needed --noconfirm \
         base-devel git curl wget stow \
         man-db man-pages \
-        zsh zsh-completions \
-        zsh-syntax-highlighting zsh-autosuggestions \
+        zsh zsh-syntax-highlighting zsh-autosuggestions \
         htop btop \
         neovim \
         ripgrep fd fzf \
@@ -126,8 +125,8 @@ install_base_system() {
         tmux \
         lf \
         pass \
-        atuin \
-        ccze || error "Failed to install base packages"
+        atuin ||
+        error "Failed to install base packages"
 
     success "Base packages installed"
 }
@@ -160,7 +159,7 @@ install_wayland_stack() {
 
     sudo pacman -S --needed --noconfirm \
         wayland wayland-protocols \
-        wlroots0.18 \
+        wlroots \
         libinput \
         libxkbcommon \
         xorg-xwayland \
@@ -187,7 +186,6 @@ install_applications() {
         grim slurp \
         swaybg \
         mako \
-        widle \
         pamixer \
         playerctl || error "Application install failed"
 
@@ -353,6 +351,68 @@ build_wmenu() {
     sudo ninja -C build install
 
     success "wmenu-dwlb installed"
+}
+
+# ============================================
+# Build ccze (GitHub — cornet/ccze)
+# ============================================
+
+build_ccze() {
+    section "Building ccze"
+
+    mkdir -p "$BUILDS_DIR"
+    cd "$BUILDS_DIR"
+
+    if [ -d "ccze" ]; then
+        git -C ccze pull || true
+    else
+        git clone https://github.com/cornet/ccze.git
+    fi
+
+    cd ccze
+
+    if [ -f configure.ac ] || [ -f configure.in ]; then
+        autoreconf -fi 2>/dev/null || warn "autoreconf failed, trying make directly"
+        ./configure --prefix=/usr/local || error "ccze configure failed"
+        make || error "ccze build failed"
+        sudo make install
+    else
+        make || error "ccze build failed"
+        sudo make install
+    fi
+
+    success "ccze installed"
+}
+
+# ============================================
+# Build widle (Codeberg — sewn/widle)
+# ============================================
+
+build_widle() {
+    section "Building widle"
+
+    mkdir -p "$BUILDS_DIR"
+    cd "$BUILDS_DIR"
+
+    if [ -d "widle" ]; then
+        git -C widle pull || true
+    else
+        git clone https://codeberg.org/sewn/widle.git
+    fi
+
+    cd widle
+
+    if [ -f meson.build ]; then
+        rm -rf build
+        meson setup build
+        ninja -C build
+        sudo ninja -C build install
+    else
+        make || error "widle build failed"
+        sudo make install
+    fi
+
+    success "widle installed"
 }
 
 # ============================================
@@ -545,6 +605,8 @@ BANNER
     build_dwlb
     build_wmenu
     patch_startup_for_vm # injects WLR_RENDERER into start-dwl.sh
+    build_ccze
+    build_widle
     setup_zsh_plugins
     setup_tmux_plugins
     setup_walls
