@@ -95,6 +95,14 @@ setup_pacman() {
     section "Configuring Pacman"
 
     sudo cp /etc/pacman.conf /etc/pacman.conf.backup
+
+    # Enable [extra] if disabled (fresh archinstall sometimes skips it)
+    if grep -q '^#\[extra\]' /etc/pacman.conf; then
+        sudo sed -i 's/^#\[extra\]/[extra]/' /etc/pacman.conf
+        sudo sed -i '/^\[extra\]/,/^Include/{s/^#Include/Include/}' /etc/pacman.conf
+        log "[extra] repository enabled"
+    fi
+
     sudo sed -i 's/^#ParallelDownloads/ParallelDownloads/' /etc/pacman.conf
     sudo sed -i 's/^#Color/Color/' /etc/pacman.conf
     grep -q "ILoveCandy" /etc/pacman.conf || sudo sed -i '/^Color/a ILoveCandy' /etc/pacman.conf
