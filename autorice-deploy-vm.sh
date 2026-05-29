@@ -13,7 +13,6 @@
 #   - WLR_RENDERER=pixman           (software rendering fallback)
 #   - WLR_NO_HARDWARE_CURSORS=1     (prevents cursor crash)
 #   - Virtual-1 monitor in dwl config (not eDP-1)
-#   - slstatus has no battery block
 #
 # Usage: ./autorice-deploy-vm.sh
 #
@@ -34,7 +33,7 @@ WALLS_DIR="$HOME/walls"
 
 DWL_REPO="https://codeberg.org/sevz/dwl.git"
 DWLB_REPO="https://github.com/caos-obliquo/dwlb-geometry.git"
-WMENU_REPO="https://github.com/caos-obliquo/wmenu-dwlb.git" # https only in VM (no SSH key)
+WMENU_REPO="https://github.com/caos-obliquo/wmenu-dwlb.git"
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -96,11 +95,16 @@ setup_pacman() {
 
     sudo cp /etc/pacman.conf /etc/pacman.conf.backup
 
-    # Ensure [extra] repository is enabled — archinstall sometimes leaves it commented
+    # Remove deprecated repos that break extra sync (removed March 2025)
+    for repo in community community-testing testing testing-debug staging staging-debug; do
+        sudo sed -i "/^\[$repo\]/,/^$/d" /etc/pacman.conf
+    done
+
+    # Ensure [extra] is present and uncommented
     if grep -q '^#\[extra\]' /etc/pacman.conf; then
         sudo sed -i 's/^#\[extra\]/[extra]/' /etc/pacman.conf
-        sudo sed -i 's/^#Include = /etc\/pacman.d\/mirrorlist/Include = \/etc\/pacman.d\/mirrorlist/' /etc/pacman.conf
-        log "[extra] repository enabled"
+        sudo sed -i '/^\[extra\]/{n;s/^#Include/Include/}' /etc/pacman.conf
+        log "[extra] repository uncommented"
     elif ! grep -q '^\[extra\]' /etc/pacman.conf; then
         printf '\n[extra]\nInclude = /etc/pacman.d/mirrorlist\n' | sudo tee -a /etc/pacman.conf >/dev/null
         log "[extra] repository appended"
@@ -110,11 +114,14 @@ setup_pacman() {
     sudo sed -i 's/^#Color/Color/' /etc/pacman.conf
     grep -q "ILoveCandy" /etc/pacman.conf || sudo sed -i '/^Color/a ILoveCandy' /etc/pacman.conf
 
+    # Update mirrors
     sudo pacman -S --needed --noconfirm reflector
     sudo reflector --country Brazil --age 12 --protocol https --sort rate \
         --save /etc/pacman.d/mirrorlist
 
-    sudo pacman -Syy
+    # Full sync + upgrade to avoid partial upgrade issues
+    sudo pacman -Syu --noconfirm
+
     success "Pacman configured"
 }
 
@@ -128,7 +135,8 @@ install_base_system() {
     sudo pacman -S --needed --noconfirm \
         base-devel git curl wget stow \
         man-db man-pages \
-        zsh zsh-syntax-highlighting zsh-autosuggestions \
+        zsh zsh-completions \
+        zsh-syntax-highlighting zsh-autosuggestions \
         htop btop \
         neovim \
         ripgrep fd fzf \
@@ -136,14 +144,14 @@ install_base_system() {
         tmux \
         lf \
         pass \
-        atuin ||
-        error "Failed to install base packages"
+        atuin \
+        ccze || error "Failed to install base packages"
 
     success "Base packages installed"
 }
 
 # ============================================
-# VM Guest Utilities (replaces AMD GPU section)
+# VM Guest Utilities
 # ============================================
 
 setup_vm_guest() {
@@ -156,7 +164,7 @@ setup_vm_guest() {
         libva-mesa-driver || warn "Some VM guest packages had issues"
 
     sudo systemctl enable spice-vdagentd.service
-    sudo systemctl start spice-vdagentd.service
+    sudo systemctl start spice-vdagentd.service 2>/dev/null || true
 
     success "VM guest utilities configured"
 }
@@ -168,25 +176,36 @@ setup_vm_guest() {
 install_wayland_stack() {
     section "Installing Wayland Stack"
 
-    # Try official repos first
-    if pacman -Ss wlroots &>/dev/null; then
-        sudo pacman -S --needed --noconfirm \
-            wayland wayland-protocols \
-            wlroots \
-            libinput \
-            libxkbcommon \
-            xorg-xwayland \
-            xcb-util-wm \
-            pixman \
-            pkgconf \
-            fcft \
-            meson ninja || error "Wayland stack failed"
+    # Ensure pacman db is fresh before checking wlroots0.18
+    sudo pacman -Sy --noconfirm
+
+    # wlroots0.18 is in [extra] — install it with all required deps explicitly
+    # deps: seatd, libdisplay-info, libliftoff, vulkan-icd-loader, lcms2
+    if sudo pacman -S --needed --noconfirm \
+        wayland wayland-protocols \
+        wlroots0.18 \
+        seatd \
+        libdisplay-info \
+        libliftoff \
+        vulkan-icd-loader \
+        lcms2 \
+        libinput \
+        libxkbcommon \
+        xorg-xwayland \
+        xcb-util-wm \
+        xcb-util-errors \
+        xcb-util-renderutil \
+        pixman \
+        pkgconf \
+        fcft \
+        glslang \
+        vulkan-headers \
+        meson ninja; then
+        success "Wayland stack installed from [extra]"
     else
-        warn "wlroots not in repos — building from source"
+        warn "wlroots0.18 from pacman failed — building from source (v0.18.3)"
         build_wlroots_from_source
     fi
-
-    success "Wayland stack installed"
 }
 
 # ============================================
@@ -194,38 +213,38 @@ install_wayland_stack() {
 # ============================================
 
 build_wlroots_from_source() {
-    section "Building wlroots from source"
+    section "Building wlroots 0.18 from source"
+
+    # Install all build deps first
+    sudo pacman -S --needed --noconfirm \
+        wayland wayland-protocols \
+        seatd libdisplay-info libliftoff \
+        vulkan-icd-loader vulkan-headers \
+        lcms2 libinput libxkbcommon \
+        xorg-xwayland xcb-util-wm \
+        xcb-util-errors xcb-util-renderutil \
+        pixman pkgconf glslang \
+        meson ninja git || error "wlroots build deps failed"
 
     mkdir -p "$BUILDS_DIR"
     cd "$BUILDS_DIR"
 
     if [ -d "wlroots" ]; then
-        git -C wlroots pull || true
+        git -C wlroots fetch --all
     else
         git clone https://gitlab.freedesktop.org/wlroots/wlroots.git
     fi
 
     cd wlroots
+    git checkout 0.18.3 2>/dev/null || git checkout $(git tag | grep "^0\.18" | sort -V | tail -1)
 
-    # Install build deps first
-    sudo pacman -S --needed --noconfirm \
-        wayland wayland-protocols \
-        libinput \
-        libxkbcommon \
-        xorg-xwayland \
-        xcb-util-wm \
-        pixman \
-        pkgconf \
-        fcft \
-        meson ninja || error "wlroots build deps failed"
-
-    # Build wlroots
     rm -rf build
-    meson setup build
+    meson setup build --buildtype=release
     ninja -C build
     sudo ninja -C build install
+    sudo ldconfig
 
-    success "wlroots built and installed from source"
+    success "wlroots 0.18 built and installed from source"
 }
 
 # ============================================
@@ -332,10 +351,8 @@ build_dwl() {
 
     cd dwl
 
-    # Use dotfiles config.h if available, then patch monitor rule for VM
     if [ -f "$DOTFILES_DIR/builds/dwl/config.h" ]; then
         cp "$DOTFILES_DIR/builds/dwl/config.h" .
-        # Replace eDP-1 with Virtual-1 for VM
         sed -i 's/"eDP-1"/"Virtual-1"/g' config.h
         success "config.h from dotfiles, patched for Virtual-1"
     else
@@ -410,37 +427,6 @@ build_wmenu() {
 }
 
 # ============================================
-# Build ccze (GitHub — cornet/ccze)
-# ============================================
-
-build_ccze() {
-    section "Building ccze"
-
-    mkdir -p "$BUILDS_DIR"
-    cd "$BUILDS_DIR"
-
-    if [ -d "ccze" ]; then
-        git -C ccze pull || true
-    else
-        git clone https://github.com/cornet/ccze.git
-    fi
-
-    cd ccze
-
-    if [ -f configure.ac ] || [ -f configure.in ]; then
-        autoreconf -fi 2>/dev/null || warn "autoreconf failed, trying make directly"
-        ./configure --prefix=/usr/local || error "ccze configure failed"
-        make || error "ccze build failed"
-        sudo make install
-    else
-        make || error "ccze build failed"
-        sudo make install
-    fi
-
-    success "ccze installed"
-}
-
-# ============================================
 # Build widle (Codeberg — sewn/widle)
 # ============================================
 
@@ -485,7 +471,6 @@ patch_startup_for_vm() {
         return
     fi
 
-    # Inject VM env vars before exec dwl line
     if ! grep -q "WLR_RENDERER" "$STARTUP"; then
         sed -i '/^export XDG_SESSION_TYPE/a export WLR_RENDERER=pixman\nexport WLR_NO_HARDWARE_CURSORS=1' "$STARTUP"
         success "WLR_RENDERER=pixman injected into start-dwl.sh"
@@ -565,35 +550,25 @@ setup_neovim() {
         log "nvim config exists, pulling..."
         git -C "$CONFIG_DIR/nvim" pull
     else
-        git clone git@github.com:caos-obliquo/nvim.git "$CONFIG_DIR/nvim" 2>/dev/null ||
-            git clone https://github.com/caos-obliquo/nvim.git "$CONFIG_DIR/nvim"
+        git clone https://github.com/caos-obliquo/nvim.git "$CONFIG_DIR/nvim"
     fi
+
+    log "Installing system linter dependencies..."
+    sudo pacman -S --needed --noconfirm \
+        nodejs npm \
+        luarocks luacheck \
+        cppcheck \
+        jdk21-openjdk || warn "Some nvim system deps failed"
+
+    sudo archlinux-java set java-21-openjdk 2>/dev/null || warn "Could not set java-21-openjdk"
 
     log "Configuring npm global prefix..."
     mkdir -p "$HOME/.npm-global"
     npm config set prefix "$HOME/.npm-global"
-    npm install -g neovim || warn "npm neovim provider failed"
+    npm install -g neovim 2>/dev/null || warn "npm neovim provider failed"
 
     log "Installing pynvim..."
-    pip install pynvim --break-system-packages || warn "pynvim install failed"
-
-    log "Installing system linter dependencies..."
-    sudo pacman -S --needed --noconfirm \
-        luarocks \
-        luacheck \
-        cppcheck \
-        nodejs \
-        npm || warn "Some nvim system deps failed"
-
-    log "Installing Java (jdtls dependency)..."
-    sudo pacman -S --needed --noconfirm jdk21-openjdk || warn "Java install failed"
-    sudo archlinux-java set java-21-openjdk 2>/dev/null || warn "Could not set java-21-openjdk"
-
-    if command -v yay &>/dev/null; then
-        yay -S --needed --noconfirm pmd || warn "pmd AUR install failed"
-    else
-        warn "pmd not installed — no AUR helper. Install manually or via yay."
-    fi
+    pip install pynvim --break-system-packages 2>/dev/null || warn "pynvim install failed"
 
     success "Neovim deployed — open nvim, run :Lazy sync then :Mason"
     warn "Mason packages: :MasonInstall yamllint jsonlint hadolint tflint shellcheck eslint_d htmlhint stylelint ruff cpplint golangci-lint markdownlint luacheck shfmt prettier stylua google-java-format goimports"
@@ -617,6 +592,7 @@ print_summary() {
     echo -e "  ${YELLOW}•${NC} spice-vdagent installed (clipboard + resolution)"
     echo -e "  ${YELLOW}•${NC} dwl monitor rule patched to Virtual-1"
     echo -e "  ${YELLOW}•${NC} WLR_RENDERER=pixman + WLR_NO_HARDWARE_CURSORS=1"
+    echo -e "  ${YELLOW}•${NC} wlroots0.18 with all deps explicit"
     echo ""
     echo -e "${CYAN}Next steps:${NC}"
     echo -e "  ${BLUE}1.${NC} Add wallpaper: ${YELLOW}~/walls/wall3.jpg${NC}"
@@ -650,18 +626,16 @@ BANNER
     check_system
     setup_pacman
     install_base_system
-    setup_vm_guest # replaces setup_amd_gpu
+    setup_vm_guest
     install_wayland_stack
     install_applications
     install_portals
-    # setup_power_management skipped
     setup_network
     clone_dotfiles
     build_dwl
     build_dwlb
     build_wmenu
-    patch_startup_for_vm # injects WLR_RENDERER into start-dwl.sh
-    build_ccze
+    patch_startup_for_vm
     build_widle
     setup_zsh_plugins
     setup_tmux_plugins
