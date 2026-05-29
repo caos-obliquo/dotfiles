@@ -199,6 +199,7 @@ install_wayland_stack() {
         fcft \
         glslang \
         vulkan-headers \
+        tllist \
         meson ninja; then
         success "Wayland stack installed from [extra]"
     else
@@ -349,6 +350,14 @@ build_dwl() {
     fi
 
     cd dwl
+    git checkout 0.7 || error "dwl branch 0.7 not found"
+
+    # wlroots-0.18 installs as wlroots-0.18.pc — dwl needs wlroots.pc
+    WLROOTS_PC=$(pkg-config --variable=pcfiledir wlroots-0.18 2>/dev/null || find /usr/lib/pkgconfig /usr/local/lib/pkgconfig -name "wlroots-0.18.pc" 2>/dev/null | head -1 | xargs dirname)
+    if [ -n "$WLROOTS_PC" ] && [ ! -f "$WLROOTS_PC/wlroots.pc" ]; then
+        sudo ln -sf "$WLROOTS_PC/wlroots-0.18.pc" "$WLROOTS_PC/wlroots.pc"
+        success "wlroots.pc symlink created"
+    fi
 
     if [ -f "$DOTFILES_DIR/builds/dwl/config.h" ]; then
         cp "$DOTFILES_DIR/builds/dwl/config.h" .
@@ -391,7 +400,7 @@ build_dwlb() {
         }
 
     make clean
-    make || error "dwlb-geometry build failed"
+    PKG_CONFIG_PATH=/usr/lib/pkgconfig make || error "dwlb-geometry build failed"
     sudo make install
 
     success "dwlb-geometry installed"
