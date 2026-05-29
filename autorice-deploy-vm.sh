@@ -581,6 +581,12 @@ setup_walls() {
 setup_neovim() {
     section "Setting Up Neovim (caos.nvim)"
 
+    # Remove if exists but is not a git repo (e.g. copied from dotfiles home/)
+    if [ -d "$CONFIG_DIR/nvim" ] && [ ! -d "$CONFIG_DIR/nvim/.git" ]; then
+        log "nvim dir exists but is not a git repo — removing..."
+        rm -rf "$CONFIG_DIR/nvim"
+    fi
+
     if [ -d "$CONFIG_DIR/nvim" ]; then
         log "nvim config exists, pulling..."
         git -C "$CONFIG_DIR/nvim" pull
