@@ -609,7 +609,10 @@ setup_neovim() {
     npm install -g neovim 2>/dev/null || warn "npm neovim provider failed"
 
     log "Installing pynvim..."
-    pip install pynvim --break-system-packages 2>/dev/null || warn "pynvim install failed"
+    sudo pacman -S --needed --noconfirm python-pip 2>/dev/null || true
+    pip install pynvim --break-system-packages 2>/dev/null ||
+        pip3 install pynvim --break-system-packages 2>/dev/null ||
+        warn "pynvim install failed — install manually: pip install pynvim"
 
     success "Neovim deployed — open nvim, run :Lazy sync then :Mason"
     warn "Mason packages: :MasonInstall yamllint jsonlint hadolint tflint shellcheck eslint_d htmlhint stylelint ruff cpplint golangci-lint markdownlint luacheck shfmt prettier stylua google-java-format goimports"
