@@ -144,8 +144,7 @@ install_base_system() {
         tmux \
         lf \
         pass \
-        atuin \
-        ccze || error "Failed to install base packages"
+        atuin || error "Failed to install base packages"
 
     success "Base packages installed"
 }
@@ -480,6 +479,33 @@ patch_startup_for_vm() {
 }
 
 # ============================================
+# Build ccze from source (cornet/ccze)
+# ============================================
+
+build_ccze() {
+    section "Building ccze"
+
+    sudo pacman -S --needed --noconfirm ncurses pcre autoconf automake
+
+    mkdir -p "$BUILDS_DIR"
+    cd "$BUILDS_DIR"
+
+    if [ -d "ccze" ]; then
+        git -C ccze pull || true
+    else
+        git clone https://github.com/cornet/ccze.git
+    fi
+
+    cd ccze
+    autoreconf -fi
+    ./configure --prefix=/usr/local
+    make
+    sudo make install
+
+    success "ccze installed"
+}
+
+# ============================================
 # zsh plugins
 # ============================================
 
@@ -637,6 +663,7 @@ BANNER
     build_wmenu
     patch_startup_for_vm
     build_widle
+    build_ccze
     setup_zsh_plugins
     setup_tmux_plugins
     setup_walls
