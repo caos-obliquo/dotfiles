@@ -1,4 +1,4 @@
-#define _POSIX_C_SOURCE 200809L
+#include "xdg-shell-client-protocol.h"
 #include <assert.h>
 #include <errno.h>
 #include <poll.h>
@@ -42,6 +42,8 @@ struct output
   struct wl_output *output;
   const char *name;    // output name
   int32_t scale;       // output scale
+  int32_t width;       // output width (logical, pixels)
+  int32_t height;      // output height (logical, pixels)
   struct output *next; // next output
 };
 
@@ -111,6 +113,9 @@ struct wl_context
   struct zwlr_layer_shell_v1 *layer_shell;
   struct output *output_list;
   struct xdg_activation_v1 *activation;
+  struct xdg_wm_base *xdg_wm_base;
+  struct xdg_surface *xdg_surface;
+  struct xdg_toplevel *xdg_toplevel;
 
   struct keyboard *keyboard;
   struct wl_data_device *data_device;
@@ -299,6 +304,15 @@ output_scale (void *data, struct wl_output *wl_output, int32_t factor)
 }
 
 static void
+output_mode (void *data, struct wl_output *wl_output, uint32_t flags,
+             int32_t width, int32_t height, int32_t refresh)
+{
+  struct output *output = data;
+  output->width = width;
+  output->height = height;
+}
+
+static void
 output_name (void *data, struct wl_output *wl_output, const char *name)
 {
   struct output *output = data;
@@ -314,7 +328,7 @@ output_name (void *data, struct wl_output *wl_output, const char *name)
 
 static const struct wl_output_listener output_listener = {
   .geometry = noop,
-  .mode = noop,
+  .mode = output_mode,
   .done = noop,
   .scale = output_scale,
   .name = output_name,
@@ -488,6 +502,11 @@ handle_global (void *data, struct wl_registry *registry, uint32_t name,
       wl_output_add_listener (wl_output, &output_listener, output);
       context_add_output (context, output);
     }
+  else if (strcmp (interface, xdg_wm_base_interface.name) == 0)
+    {
+      context->xdg_wm_base
+          = wl_registry_bind (registry, name, &xdg_wm_base_interface, 1);
+    }
   else if (strcmp (interface, xdg_activation_v1_interface.name) == 0)
     {
       context->activation
@@ -563,29 +582,72 @@ menu_run (struct menu *menu)
       anchor |= ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM;
       break;
     case POSITION_TOP:
-      anchor |= ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP
-                | ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM
-                | ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT
-                | ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT;
+      anchor |= ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP;
       break;
     case POSITION_TOP_CENTER:
       anchor = ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP
                | ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT;
       break;
     case POSITION_CENTER:
-      anchor |= ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP
-                | ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM;
-      // we will handle this in rendering.
+      // No horizontal anchor: the compositor centers the surface on X.
+      anchor = ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP
+               | ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM;
       break;
     }
 
   if (menu->position == POSITION_CENTER)
     {
       calc_widths (menu);
+      int min_width = 800;
       menu->width = menu->promptw + menu->inputw + 2 * menu->padding;
-      zwlr_layer_surface_v1_set_margin (layer_surface, -1, 420, -1, 420);
-      zwlr_layer_surface_v1_set_size (layer_surface, menu->width,
-                                      menu->height);
+      if (menu->width < min_width)
+        {
+          menu->width = min_width;
+        }
+
+      // Desired height: prompt row plus up to 15 visible item rows.
+      int desired_height = menu->line_height;
+      size_t capped_item_count = menu->item_count > 15 ? 15 : menu->item_count;
+      for (size_t i = 0; i < capped_item_count; i++)
+        {
+          desired_height += menu->items[i].thumb_path ? 96 : menu->line_height;
+        }
+      menu->height = desired_height;
+
+      // Center on the first output in the registry list. context->output is
+      // only set by the wl_surface enter handler, which fires after the first
+      // layer configure, so it is NULL here. The registry-bound outputs have
+      // their width/height/scale filled in by the roundtrips above.
+      struct output *output = context->output_list;
+      if (output)
+        {
+          int logical_width = output->width / output->scale;
+          int logical_height = output->height / output->scale;
+
+          int frame_width = logical_width * 3 / 5;
+          if (frame_width < 400)
+            frame_width = 400;
+          if (frame_width > 900)
+            frame_width = 900;
+          if (frame_width > logical_width)
+            frame_width = logical_width;
+
+          int margin = (logical_height - desired_height) / 2;
+          if (margin < 0)
+            margin = 0;
+
+          zwlr_layer_surface_v1_set_size (layer_surface, frame_width,
+                                          desired_height);
+          zwlr_layer_surface_v1_set_margin (layer_surface, margin, 0, margin,
+                                            0);
+        }
+      else
+        {
+          // No output known yet: fall back to top-anchored sizing.
+          zwlr_layer_surface_v1_set_size (layer_surface, menu->width,
+                                          menu->height);
+          zwlr_layer_surface_v1_set_margin (layer_surface, 0, 0, 0, 0);
+        }
     }
   else if (menu->position == POSITION_TOP_CENTER)
     {
@@ -606,7 +668,6 @@ menu_run (struct menu *menu)
       else
         {
           // Fallback to config.h values
-          zwlr_layer_surface_v1_set_margin (layer_surface, 0, 0, 0, 0);
           zwlr_layer_surface_v1_set_size (layer_surface, 0, menu->height);
         }
     }

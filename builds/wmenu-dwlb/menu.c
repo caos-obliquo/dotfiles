@@ -36,6 +36,7 @@ menu_create (menu_callback callback)
   menu->promptfg = dwlb_middle_fg;
   menu->selectionbg = 0xbd93f9ff;
   menu->selectionfg = 0xf8f8f2ff;
+  menu->border = 0x888888ff;
   menu->callback = callback;
   menu->test_surface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, 1, 1);
   menu->test_cairo = cairo_create (menu->test_surface);
@@ -61,6 +62,7 @@ free_items (struct menu *menu)
     {
       struct item *item = &menu->items[i];
       free (item->text);
+      free (item->thumb_path);
     }
   free (menu->items);
 }
@@ -105,9 +107,9 @@ menu_getopts (struct menu *menu, int argc, char *argv[])
   const char *usage
       = "Usage: wmenu [-bcitPv] [-f font] [-l lines] [-o output] [-p prompt]\n"
         "\t[-N color] [-n color] [-M color] [-m color] [-S color] [-s color] "
-        "[-w minwidth]\n";
+        "[-B color] [-w minwidth]\n";
   int opt;
-  while ((opt = getopt (argc, argv, "bchitPvf:l:o:p:N:n:M:m:S:s:w:")) != -1)
+  while ((opt = getopt (argc, argv, "bchitPvf:l:o:p:N:n:M:m:S:s:B:w:")) != -1)
     {
       switch (opt)
         {
@@ -179,6 +181,12 @@ menu_getopts (struct menu *menu, int argc, char *argv[])
                        optarg);
             }
           break;
+        case 'B':
+          if (!parse_color (optarg, &menu->border))
+            {
+              fprintf (stderr, "Invalid border color: %s", optarg);
+            }
+          break;
         case 'w':
           menu->minwidth = atoi (optarg);
           if (menu->minwidth < 0)
@@ -204,7 +212,15 @@ menu_getopts (struct menu *menu, int argc, char *argv[])
   menu->height = dwlb_bar_height;
   if (menu->lines > 0)
     {
-      menu->height += menu->height * menu->lines;
+      int actual_lines
+          = (menu->item_count > 0 && menu->item_count < (size_t)menu->lines)
+                ? (int)menu->item_count
+                : menu->lines;
+      for (int i = 0; i < actual_lines && i < (int)menu->item_count; i++)
+        {
+          struct item *item = &menu->items[i];
+          menu->height += item->thumb_path ? 96 : menu->line_height;
+        }
     }
   menu->padding = height / 2;
 }
@@ -229,6 +245,7 @@ menu_add_item (struct menu *menu, char *text)
 
   struct item *new = &menu->items[menu->item_count];
   new->text = text;
+  new->thumb_path = NULL;
 
   menu->item_count++;
 }
@@ -306,7 +323,19 @@ page_items (struct menu *menu)
           struct page *page = calloc (1, sizeof (struct page));
           page->first = item;
 
-          for (int i = 1; item && i <= menu->lines; i++)
+          int page_height = 0;
+          int max_height = menu->height - menu->line_height;
+          while (item
+                 && page_height + (item->thumb_path ? 96 : menu->line_height)
+                        <= max_height)
+            {
+              page_height += item->thumb_path ? 96 : menu->line_height;
+              item->page = page;
+              page->last = item;
+              item = item->next_match;
+            }
+          /* safety: always include at least one item per page */
+          if (!page->last)
             {
               item->page = page;
               page->last = item;
@@ -495,6 +524,22 @@ void
 menu_render_items (struct menu *menu)
 {
   calc_widths (menu);
+
+  /* recalculate height now that all items are loaded */
+  if (menu->lines > 0)
+    {
+      menu->height = dwlb_bar_height;
+      int actual_lines
+          = (menu->item_count > 0 && menu->item_count < (size_t)menu->lines)
+                ? (int)menu->item_count
+                : menu->lines;
+      for (int i = 0; i < actual_lines && i < (int)menu->item_count; i++)
+        {
+          struct item *item = &menu->items[i];
+          menu->height += item->thumb_path ? 96 : menu->line_height;
+        }
+    }
+
   match_items (menu);
   render_menu (menu);
 }
