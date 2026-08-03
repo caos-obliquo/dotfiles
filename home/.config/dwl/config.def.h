@@ -96,7 +96,8 @@ static const char *const autostart[]
 static const char *termcmd[] = { "foot", NULL };
 static const char *menucmd[] = { "wmenu-run", "-t", NULL };
 static const char *lockcmd[] = { "wlock", NULL };
-static const char *clipcmd[] = { "clipboard-pick.sh", NULL };
+static const char *clipcmd[] = { "wclipmenu", NULL };
+static const char *clipimgcmd[] = { "wclipmenu", "image", NULL };
 
 /* media keys only - FN+F keys handled by laptop firmware */
 static const char *brightnessup[] = { "brightnessctl", "set", "+5%", NULL };
@@ -127,6 +128,7 @@ static const Key keys[] = {
   { MODKEY | WLR_MODIFIER_SHIFT, XKB_KEY_Return, spawn, { .v = termcmd } },
   { MODKEY | WLR_MODIFIER_SHIFT, XKB_KEY_L, spawn, { .v = lockcmd } },
   { MODKEY, XKB_KEY_p, spawn, { .v = clipcmd } },
+  { MODKEY | WLR_MODIFIER_SHIFT, XKB_KEY_P, spawn, { .v = clipimgcmd } },
 
   /* window navigation - same monitor */
   { MODKEY, XKB_KEY_j, focusstack, { .i = +1 } }, /* next window */
