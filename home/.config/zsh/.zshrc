@@ -14,8 +14,8 @@ ZVM_VISUAL_LINE_MODE_CURSOR=$ZVM_CURSOR_UNDERLINE
 # Enable colors
 autoload -U colors && colors
 
-# Dracula prompt: user@host path$ / >
-PS1=$'%B%F{magenta}%n%f%F{white}@%f%F{blue}%M %F{magenta}%~%f%b%F{white}$%f\n%F{212}>%f '
+# Dracula prompt: user@host path$ / > (❯)
+PS1=$'%B%F{magenta}%n%f%F{white}@%f%F{blue}%M %F{magenta}%~%f%b%F{white}$%f\n%B%F{212}❯%f%b '
 
 # History
 HISTSIZE=10000000
@@ -184,7 +184,43 @@ if [ -f ~/.local/share/zsh/plugins/zsh-z/zsh-z.plugin.zsh ]; then
 fi
 
 # =============================================================================
+# ATUIN
+# =============================================================================
+
+eval "$(atuin init zsh --disable-up-arrow --disable-ctrl-r)"
+
+# Bind Ctrl+Up to atuin search
+bindkey '^[[1;5A' atuin-search
+
+# Vi mode: bind 'k' in normal mode to atuin search
+bindkey -M vicmd 'k' atuin-search
+
+# =============================================================================
 # ALIASES
 # =============================================================================
 
 alias update="source ~/.config/zsh/.zshrc"
+
+. "$HOME/.local/share/../bin/env"
+
+export OLLAMA_API_KEY=""
+export GEMINI_API_KEY=""
+
+export CEREBRAS_API_KEY=""
+
+# Auto-start LiteLLM proxy
+if ! pgrep -f "litellm.*4000" > /dev/null 2>&1; then
+  nohup litellm --config ~/.pi/litellm-config.yaml --port 4000 \
+    > ~/.pi/litellm.log 2>&1 &
+fi
+export LIBVIRT_DEFAULT_URI="qemu:///system"
+export PATH="$HOME/.config/emacs/bin:$PATH"
+
+# opencode
+export PATH=/home/caos/.opencode/bin:$PATH
+export SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
+export YTMAPI_COOKIE=~/.config/terraform-ytmusic/cookies.txt
+export PATH="$HOME/.cargo/bin:$PATH"
+
+# bun completions
+[ -s "/home/caos/.bun/_bun" ] && source "/home/caos/.bun/_bun"
