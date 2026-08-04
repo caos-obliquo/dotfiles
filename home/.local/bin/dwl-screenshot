@@ -3,15 +3,15 @@
 
 case "$1" in
     full)
-        grim - | tee ~/Pictures/screenshot-$(date +%Y%m%d-%H%M%S).png | magick - -resize '1280x>' - | kapc copy -t image/png
+        grim - | tee ~/Pictures/screenshot-$(date +%Y%m%d-%H%M%S).png | magick - -resize '1280x>' - | wl-copy -t image/png >/dev/null 2>&1
         notify-send "Screenshot" "Full screen saved to history" 2>/dev/null || true
         ;;
     area)
-        grim -g "$(slurp)" - | tee ~/Pictures/screenshot-$(date +%Y%m%d-%H%M%S).png | magick - -resize '1280x>' - | kapc copy -t image/png
+        grim -g "$(slurp)" - | tee ~/Pictures/screenshot-$(date +%Y%m%d-%H%M%S).png | magick - -resize '1280x>' - | wl-copy -t image/png >/dev/null 2>&1
         notify-send "Screenshot" "Area saved to history" 2>/dev/null || true
         ;;
     window)
-        grim -g "$(slurp -d)" - | tee ~/Pictures/screenshot-$(date +%Y%m%d-%H%M%S).png | magick - -resize '1280x>' - | kapc copy -t image/png
+        grim -g "$(slurp -d)" - | tee ~/Pictures/screenshot-$(date +%Y%m%d-%H%M%S).png | magick - -resize '1280x>' - | wl-copy -t image/png >/dev/null 2>&1
         notify-send "Screenshot" "Window saved to history" 2>/dev/null || true
         ;;
     *)
