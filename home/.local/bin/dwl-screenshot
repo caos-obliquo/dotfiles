@@ -1,17 +1,21 @@
 #!/bin/bash
 # DWL screenshot for Wayland with clipboard support
+# wl-copy --foreground keeps the selection source alive until slow consumers
+# (browsers via wl_data_device) finish pulling — without it, large PNGs get
+# truncated to their top half (white bottom) when wl-copy forks and exits early.
+# Backgrounded so the keybind returns immediately; the copy stays served.
 
 case "$1" in
     full)
-        grim - | tee ~/Pictures/screenshot-$(date +%Y%m%d-%H%M%S).png | magick - -resize '1280x>' - | wl-copy -t image/png >/dev/null 2>&1
+        grim - | tee ~/Pictures/screenshot-$(date +%Y%m%d-%H%M%S).png | magick - -resize '1280x>' - | wl-copy --foreground -t image/png >/dev/null 2>&1 &
         notify-send "Screenshot" "Full screen saved to history" 2>/dev/null || true
         ;;
     area)
-        grim -g "$(slurp)" - | tee ~/Pictures/screenshot-$(date +%Y%m%d-%H%M%S).png | magick - -resize '1280x>' - | wl-copy -t image/png >/dev/null 2>&1
+        grim -g "$(slurp)" - | tee ~/Pictures/screenshot-$(date +%Y%m%d-%H%M%S).png | magick - -resize '1280x>' - | wl-copy --foreground -t image/png >/dev/null 2>&1 &
         notify-send "Screenshot" "Area saved to history" 2>/dev/null || true
         ;;
     window)
-        grim -g "$(slurp -d)" - | tee ~/Pictures/screenshot-$(date +%Y%m%d-%H%M%S).png | magick - -resize '1280x>' - | wl-copy -t image/png >/dev/null 2>&1
+        grim -g "$(slurp -d)" - | tee ~/Pictures/screenshot-$(date +%Y%m%d-%H%M%S).png | magick - -resize '1280x>' - | wl-copy --foreground -t image/png >/dev/null 2>&1 &
         notify-send "Screenshot" "Window saved to history" 2>/dev/null || true
         ;;
     *)
