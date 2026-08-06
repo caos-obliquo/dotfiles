@@ -1,3 +1,38 @@
+# AI agent memory / instruction files
+CLAUDE.md
+CLAUDE.local.md
+AGENTS.md
+AGENTS.local.md
+.omo/
+.opencode/
+.opencode.json
+.codex/
+.cursor/
+.cursorrules
+.windsurfrules
+.github/copilot-instructions.md
+.todo.md
+
+# Secrets and credentials
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+id_rsa
+id_rsa.pub
+id_ed25519
+id_ed25519.pub
+*.env
+.env.*
+*.secret
+*.credential
+*credentials*
+*token*
+
+# SSH
+.ssh/
+
 # Backup directories
 *backup*/
 *.backup/
@@ -21,8 +56,8 @@ home/.config/dwlb/dwlb
 home/.config/dwlb-geometry/dwlb
 home/.config/slstatus/slstatus
 home/.config/wmenu/wmenu
-home/.config/wmenu-dwlb/wmenu
-home/.config/wmenu-dwlb/wmenu-run
+home/.config/wmenu-caos/wmenu
+home/.config/wmenu-caos/wmenu-run
 
 # Go dependencies and binaries
 home/.config/go/pkg/
@@ -42,20 +77,3 @@ home/.config/youtui/youtui
 .cache/
 __pycache__/
 *.pyc
-
-# Ignore Go dependencies (the 10k lines in go/pkg/)
-go/
-
-# Ignore compiled C binaries and object files
-*.o
-*.a
-*.so
-
-# Ignore ONLY the compiled binaries (full paths)
-/home/.config/dwl/dwl
-/home/.config/dwlb/dwlb
-/home/.config/dwlb-geometry/dwlb
-/home/.config/slstatus/slstatus
-/home/.config/wmenu/wmenu
-/home/.config/wmenu-dwlb/wmenu
-/home/.config/wmenu-dwlb/wmenu-run
