@@ -257,9 +257,7 @@ install_applications() {
     sudo pacman -S --needed --noconfirm \
         foot \
         wl-clipboard \
-        cliphist \
         grim slurp \
-        swaybg \
         mako \
         pamixer \
         playerctl || error "Application install failed"

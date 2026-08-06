@@ -4,7 +4,7 @@
 # EliteBook 645 G11 — dwl DraculaWL Rice Deployment
 #
 # Stack: dwl (caos-obliquo fork) + dwlb-geometry + wmenu-caos + foot + tmux + nvim
-#        zsh + atuin + ccze + mako + zathura + cliphist + widle + wlock
+#        zsh + atuin + ccze + mako + zathura + kaprica + widle + wlock
 #
 # Assumes: Fresh Arch install, user account created, sudo working
 # Usage:   ./autorice-deploy.sh
@@ -180,9 +180,7 @@ install_applications() {
     sudo pacman -S --needed --noconfirm \
         foot \
         wl-clipboard \
-        cliphist \
         grim slurp \
-        swaybg \
         mako \
         widle \
         pamixer \

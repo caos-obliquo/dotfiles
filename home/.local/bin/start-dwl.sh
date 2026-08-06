@@ -1,6 +1,5 @@
 #!/bin/bash
 pkill -9 dwlb 2>/dev/null
-pkill -9 swaybg 2>/dev/null
 pkill -9 -f dwlb-status 2>/dev/null
 pkill -9 wawa 2>/dev/null
 export XDG_SESSION_TYPE=wayland
