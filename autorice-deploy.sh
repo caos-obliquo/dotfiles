@@ -3,7 +3,7 @@
 # autorice-deploy.sh
 # EliteBook 645 G11 — dwl DraculaWL Rice Deployment
 #
-# Stack: dwl (sevz fork) + dwlb-geometry + wmenu-dwlb + foot + tmux + nvim
+# Stack: dwl (caos-obliquo fork) + dwlb-geometry + wmenu-caos + foot + tmux + nvim
 #        zsh + atuin + ccze + mako + zathura + cliphist + widle + wlock
 #
 # Assumes: Fresh Arch install, user account created, sudo working
@@ -24,9 +24,9 @@ SRC_DIR="$HOME/.local/src"
 BUILDS_DIR="$HOME/builds"
 WALLS_DIR="$HOME/walls"
 
-DWL_REPO="https://codeberg.org/sevz/dwl.git"
+DWL_REPO="https://github.com/caos-obliquo/dwl.git"
 DWLB_REPO="https://github.com/caos-obliquo/dwlb-geometry.git"
-WMENU_REPO="git@github.com:caos-obliquo/wmenu-dwlb.git"
+WMENU_REPO="https://github.com/caos-obliquo/wmenu-caos.git"
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -274,11 +274,11 @@ clone_dotfiles() {
 }
 
 # ============================================
-# Build dwl (sevz fork)
+# Build dwl (caos-obliquo fork)
 # ============================================
 
 build_dwl() {
-    section "Building dwl (sevz fork)"
+    section "Building dwl (caos-obliquo fork)"
 
     mkdir -p "$BUILDS_DIR"
     cd "$BUILDS_DIR"
@@ -336,34 +336,34 @@ build_dwlb() {
 }
 
 # ============================================
-# Build wmenu-dwlb (meson)
+# Build wmenu-caos (meson)
 # ============================================
 
 build_wmenu() {
-    section "Building wmenu-dwlb"
+    section "Building wmenu-caos"
 
     mkdir -p "$BUILDS_DIR"
     cd "$BUILDS_DIR"
 
-    if [ -d "wmenu-dwlb" ]; then
-        log "wmenu-dwlb exists, updating..."
-        git -C wmenu-dwlb pull || true
+    if [ -d "wmenu-caos" ]; then
+        log "wmenu-caos exists, updating..."
+        git -C wmenu-caos pull || true
     else
         # SSH key required — falls back to https if not set up
-        git clone "$WMENU_REPO" wmenu-dwlb 2>/dev/null ||
-            git clone "https://github.com/caos-obliquo/wmenu-dwlb.git" wmenu-dwlb
+        git clone "$WMENU_REPO" wmenu-caos 2>/dev/null ||
+            git clone "https://github.com/caos-obliquo/wmenu-caos.git" wmenu-caos
     fi
 
-    cd wmenu-dwlb
-    cp "$DOTFILES_DIR/builds/wmenu-dwlb/config.h" . 2>/dev/null || warn "No config.h for wmenu-dwlb"
-    cp "$DOTFILES_DIR/builds/wmenu-dwlb/menu.c" . 2>/dev/null || warn "No menu.c for wmenu-dwlb"
+    cd wmenu-caos
+    cp "$DOTFILES_DIR/builds/wmenu-caos/config.h" . 2>/dev/null || warn "No config.h for wmenu-caos"
+    cp "$DOTFILES_DIR/builds/wmenu-caos/menu.c" . 2>/dev/null || warn "No menu.c for wmenu-caos"
 
     rm -rf build
     meson setup build
     ninja -C build
     sudo ninja -C build install
 
-    success "wmenu-dwlb installed"
+    success "wmenu-caos installed"
 }
 
 # ============================================
@@ -527,7 +527,7 @@ main() {
 ╔══════════════════════════════════════════════════════════╗
 ║                                                          ║
 ║     EliteBook 645 G11 — dwl DraculaWL Autorice           ║
-║     sevz/dwl · dwlb-geometry · wmenu-dwlb                ║
+║     caos-obliquo/dwl · dwlb · wmenu-caos                ║
 ║                                                          ║
 ╚══════════════════════════════════════════════════════════╝
 BANNER
