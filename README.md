@@ -7,8 +7,8 @@ My daily driver config, affectionately called DraculaWL by me. HP EliteBook 645 
 | Tool              | Role                                                                             |
 | ----------------- | -------------------------------------------------------------------------------- |
 | **dwl**           | Wayland compositor (patched fork)                                                |
-| **dwlb-geometry** | Status bar — writes geometry + colors to `/tmp/dwlb-geometry` on every render    |
-| **wmenu-dwlb**    | Menus — app launcher + picker host; reads `/tmp/dwlb-geometry`, patched with `-c` centering, `-B` border, PNG thumbnail rendering (`[img:path]` rows) |
+| **dwlb**          | Status bar (dwl fork) — fed by `dwlb-status.sh | dwlb -status-stdin`; writes geometry + colors to `/tmp/dwlb-geometry` on every render |
+| **wmenu-caos**    | Menus (fork of wmenu-dwlb, binary stays `wmenu`) — app launcher + picker host; reads `/tmp/dwlb-geometry`, patched with `-c` centering, `-B` border, PNG thumbnail rendering (`[img:path]` rows) |
 | **wclipmenu**     | Clipboard picker — `wclipmenu` (text, Super+P) and `wclipmenu image` (thumbnails, Super+Shift+P) |
 | **kaprica**       | Clipboard history store — `kapd` watcher daemon + `kapc` CLI (search/copy/paste, file-based db) |
 | **foot**          | Terminal                                                                          |
@@ -19,21 +19,22 @@ My daily driver config, affectionately called DraculaWL by me. HP EliteBook 645 
 | **htop**          | System monitor                                                                    |
 | **ccze**          | Log colorizer                                                                     |
 | **zathura**       | PDF viewer                                                                        |
-| **widle**         | Idle daemon                                                                       |
-| **wlock**         | Screen locker                                                                     |
+| **widle**         | Idle daemon — `widle -t 300 wlock` locks after 5min idle                          |
+| **wlock**         | Screen locker (ext-session-lock) — solid color rendered via wl_shm                |
+| **wawa**          | Wallpaper — swaybg replacement; `wawa fill ~/walls/wall3.jpg` (fill mode)         |
 | **pass**          | Password manager                                                                  |
 
 Everything uses the [Dracula](https://draculatheme.com) color palette. Where an official theme exists it's used directly; where it doesn't, the colors are matched manually in the config.
 
 ## How the bar/launcher integration works
 
-`dwlb-geometry` writes to `/tmp/dwlb-geometry` on every frame:
+`dwlb` (the status bar) writes to `/tmp/dwlb-geometry` on every frame:
 
 ```
 <middle_x> <middle_width> <bar_height> <bg_color> <fg_color>
 ```
 
-`wmenu-dwlb` reads this file to position and color itself. Two modes:
+`wmenu-caos` reads this file to position and color itself. Two modes:
 
 - `-t` — positions wmenu inside the bar's title section (app launcher)
 - `-c` — centers wmenu on screen (clipboard picker, passmenu)
@@ -57,6 +58,7 @@ The wmenu fork renders PNG thumbs from `[img:path]text` stdin rows (64px, 96px r
 | Super+P              | Text clipboard history (wclipmenu) |
 | Super+Shift+P        | Image clipboard history (wclipmenu image, thumbnails) |
 | Super+S              | Screenshot area                    |
+| Super+Shift+L        | Lock screen (wlock)                |
 | Ctrl+Up              | Atuin shell history search         |
 | vi `k` (normal mode) | Atuin shell history search         |
 
@@ -69,7 +71,7 @@ cp -r home/. ~/
 chmod +x ~/.local/bin/*.sh
 ```
 
-Then clone and build the forks. Each one expects its `config.h` (and in wmenu-dwlb's case, `menu.c`) to be copied from this repo before building:
+Then clone and build the forks. Each one expects its `config.h` (and in wmenu-caos's case, `menu.c`) to be copied from this repo before building:
 
 ```bash
 # dwl
@@ -78,17 +80,16 @@ cd ~/builds/dwl
 cp ~/dotfiles/builds/dwl/config.h .
 make clean && make && sudo make install
 
-# dwlb-geometry
-git clone <your-dwlb-geometry-fork> ~/builds/dwlb-geometry
+# dwlb (status bar — fork writes /tmp/dwlb-geometry itself)
+git clone <your-dwlb-fork> ~/builds/dwlb-geometry
 cd ~/builds/dwlb-geometry
-cp ~/dotfiles/builds/dwlb-geometry/config.h .
 make clean && make && sudo make install
 
-# wmenu-dwlb
-git clone <your-wmenu-dwlb-fork> ~/builds/wmenu-dwlb
-cd ~/builds/wmenu-dwlb
-cp ~/dotfiles/builds/wmenu-dwlb/config.h .
-cp ~/dotfiles/builds/wmenu-dwlb/menu.c .
+# wmenu-caos (fork of wmenu-dwlb, binary stays wmenu)
+git clone <your-wmenu-caos-fork> ~/builds/wmenu-caos
+cd ~/builds/wmenu-caos
+cp ~/dotfiles/builds/wmenu-caos/config.h .
+cp ~/dotfiles/builds/wmenu-caos/menu.c .
 rm -rf build && meson setup build && ninja -C build && sudo ninja -C build install
 ```
 
@@ -101,6 +102,16 @@ make clean && make && sudo make install
 git clone <kaprica-repo> ~/builds/kaprica
 cd ~/builds/kaprica
 # build per its meson instructions, installs kapd + kapc to /usr/local/bin
+
+# wlock (screen locker)
+git clone <your-wlock-fork> ~/builds/wlock
+cd ~/builds/wlock
+make clean && make && sudo make install  # installs suid-root (4755)
+
+# wawa (wallpaper)
+git clone <your-wawa-fork> ~/builds/wawa
+cd ~/builds/wawa
+make clean && make && sudo make install
 ```
 
 Start everything:
@@ -109,20 +120,20 @@ Start everything:
 start-dwl.sh
 ```
 
-kapd (the clipboard watcher), dwlb, and the status feed all start automatically from there.
+kapd (the clipboard watcher), dwlb, the status feed, the wallpaper (`wawa fill ~/walls/wall3.jpg`), and the idle→lock chain (`widle -t 300 wlock`) all start automatically from there.
 
 ## Dependencies
 
 ```bash
-pacman -S grim slurp wl-clipboard pamixer swaybg atuin pass \
+pacman -S grim slurp wl-clipboard pamixer atuin pass \
           foot mako htop ccze zathura zathura-pdf-mupdf widle
 ```
 
-wmenu-dwlb needs cairo, pango, wayland, xkbcommon, and the `wlr-layer-shell-unstable-v1` protocol (meson + ninja). `wclipmenu image` needs ImageMagick (`magick`) for thumbnail generation.
+wmenu-caos needs cairo, pango, wayland, xkbcommon, and the `wlr-layer-shell-unstable-v1` protocol (meson + ninja). `wclipmenu image` needs ImageMagick (`magick`) for thumbnail generation.
 
 ## Notes
 
-- `start-status.sh` is deprecated — the status feed is now launched from `start-dwl.sh`
+- the status feed, wallpaper, and idle→lock chain are all launched from `start-dwl.sh`
 - wmenu uses `-t` for the bar-positioned launcher and `-c` for centered menus; `-B <color>` sets the 2px border, `-N`/`-n`/`-S`/`-s` set panel/selection colors (RRGGBBAA)
 - kapd watches the clipboard and writes history; `kapc search -t text/plain -L` is the query wclipmenu uses
-- wlock and widle are integrated — idle timeout triggers the lock screen
+- widle and wlock are integrated — `widle -t 300 wlock` (in start-dwl.sh) locks after 5min idle; Super+Shift+L locks manually

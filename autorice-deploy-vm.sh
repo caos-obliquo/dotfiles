@@ -31,9 +31,9 @@ SRC_DIR="$HOME/.local/src"
 BUILDS_DIR="$HOME/builds"
 WALLS_DIR="$HOME/walls"
 
-DWL_REPO="https://codeberg.org/sevz/dwl.git"
+DWL_REPO="https://github.com/caos-obliquo/dwl.git"
 DWLB_REPO="https://github.com/caos-obliquo/dwlb-geometry.git"
-WMENU_REPO="https://github.com/caos-obliquo/wmenu-dwlb.git"
+WMENU_REPO="https://github.com/caos-obliquo/wmenu-caos.git"
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -334,11 +334,11 @@ clone_dotfiles() {
 }
 
 # ============================================
-# Build dwl (sevz fork) — patched for Virtual-1
+# Build dwl (caos-obliquo fork) — patched for Virtual-1
 # ============================================
 
 build_dwl() {
-    section "Building dwl (sevz fork — VM/Virtual-1)"
+    section "Building dwl (caos-obliquo fork — VM/Virtual-1)"
 
     mkdir -p "$BUILDS_DIR"
     cd "$BUILDS_DIR"
@@ -407,31 +407,31 @@ build_dwlb() {
 }
 
 # ============================================
-# Build wmenu-dwlb (meson)
+# Build wmenu-caos (meson)
 # ============================================
 
 build_wmenu() {
-    section "Building wmenu-dwlb"
+    section "Building wmenu-caos"
 
     mkdir -p "$BUILDS_DIR"
     cd "$BUILDS_DIR"
 
-    if [ -d "wmenu-dwlb" ]; then
-        git -C wmenu-dwlb pull || true
+    if [ -d "wmenu-caos" ]; then
+        git -C wmenu-caos pull || true
     else
-        git clone "$WMENU_REPO" wmenu-dwlb
+        git clone "$WMENU_REPO" wmenu-caos
     fi
 
-    cd wmenu-dwlb
-    cp "$DOTFILES_DIR/builds/wmenu-dwlb/config.h" . 2>/dev/null || warn "No config.h for wmenu-dwlb"
-    cp "$DOTFILES_DIR/builds/wmenu-dwlb/menu.c" . 2>/dev/null || warn "No menu.c for wmenu-dwlb"
+    cd wmenu-caos
+    cp "$DOTFILES_DIR/builds/wmenu-caos/config.h" . 2>/dev/null || warn "No config.h for wmenu-caos"
+    cp "$DOTFILES_DIR/builds/wmenu-caos/menu.c" . 2>/dev/null || warn "No menu.c for wmenu-caos"
 
     rm -rf build
     meson setup build
     ninja -C build
     sudo ninja -C build install
 
-    success "wmenu-dwlb installed"
+    success "wmenu-caos installed"
 }
 
 # ============================================
@@ -657,7 +657,7 @@ main() {
 ╔══════════════════════════════════════════════════════════╗
 ║                                                          ║
 ║     dwl DraculaWL Autorice — VM Edition                  ║
-║     sevz/dwl · dwlb-geometry · wmenu-dwlb                ║
+║     caos-obliquo/dwl · dwlb · wmenu-caos                ║
 ║                                                          ║
 ╚══════════════════════════════════════════════════════════╝
 BANNER
