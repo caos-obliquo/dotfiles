@@ -1,0 +1,15 @@
+# Build artifacts
+*.o
+dwlb
+
+# Config files (users make their own)
+config.h
+
+# Backup files
+*.orig
+*.rej
+*.backup
+
+# Generated protocol files
+*-protocol.c
+*-protocol.h
