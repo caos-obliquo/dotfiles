@@ -7,10 +7,10 @@ My daily driver config, affectionately called DraculaWL by me. HP EliteBook 645 
 | Tool              | Role                                                                             |
 | ----------------- | -------------------------------------------------------------------------------- |
 | **dwl**           | Wayland compositor (patched fork)                                                |
-| **dwlb**          | Status bar (dwl fork) — fed by `dwlb-status.sh | dwlb -status-stdin`; writes geometry + colors to `/tmp/dwlb-geometry` on every render |
-| **wmenu-caos**    | Menus (fork of wmenu-dwlb, binary stays `wmenu`) — app launcher + picker host; reads `/tmp/dwlb-geometry`, patched with `-c` centering, `-B` border, PNG thumbnail rendering (`[img:path]` rows) |
-| **wclipmenu**     | Clipboard picker — `wclipmenu` (text, Super+P) and `wclipmenu image` (thumbnails, Super+Shift+P) |
-| **kaprica**       | Clipboard history store — `kapd` watcher daemon + `kapc` CLI (search/copy/paste, file-based db) |
+| **dwlb**          | Status bar (dwl fork) - fed by `dwlb-status.sh | dwlb -status-stdin`; writes geometry + colors to `/tmp/dwlb-geometry` on every render |
+| **wmenu-caos**    | Menus (fork of wmenu-dwlb, binary stays `wmenu`) - app launcher + picker host; reads `/tmp/dwlb-geometry`, patched with `-c` centering, `-B` border, PNG thumbnail rendering (`[img:path]` rows) |
+| **wclipmenu**     | Clipboard picker - `wclipmenu` (text, Super+P) and `wclipmenu image` (thumbnails, Super+Shift+P) |
+| **kaprica**       | Clipboard history store - `kapd` watcher daemon + `kapc` CLI (search/copy/paste, file-based db) |
 | **foot**          | Terminal                                                                          |
 | **nvim**          | Editor                                                                            |
 | **tmux**          | Multiplexer                                                                       |
@@ -19,9 +19,9 @@ My daily driver config, affectionately called DraculaWL by me. HP EliteBook 645 
 | **htop**          | System monitor                                                                    |
 | **ccze**          | Log colorizer                                                                     |
 | **zathura**       | PDF viewer                                                                        |
-| **widle**         | Idle daemon — `widle -t 300 wlock` locks after 5min idle                          |
-| **wlock**         | Screen locker (ext-session-lock) — solid color rendered via wl_shm                |
-| **wawa**          | Wallpaper — swaybg replacement; `wawa fill ~/walls/wall3.jpg` (fill mode)         |
+| **widle**         | Idle daemon - `widle -t 300 wlock` locks after 5min idle                          |
+| **wlock**         | Screen locker (ext-session-lock) - solid color rendered via wl_shm                |
+| **wawa**          | Wallpaper - swaybg replacement; `wawa fill ~/walls/wall3.jpg` (fill mode)         |
 | **pass**          | Password manager                                                                  |
 
 Everything uses the [Dracula](https://draculatheme.com) color palette. Where an official theme exists it's used directly; where it doesn't, the colors are matched manually in the config.
@@ -36,8 +36,8 @@ Everything uses the [Dracula](https://draculatheme.com) color palette. Where an 
 
 `wmenu-caos` reads this file to position and color itself. Two modes:
 
-- `-t` — positions wmenu inside the bar's title section (app launcher)
-- `-c` — centers wmenu on screen (clipboard picker, passmenu)
+- `-t` - positions wmenu inside the bar's title section (app launcher)
+- `-c` - centers wmenu on screen (clipboard picker, passmenu)
 
 This means wmenu always looks like part of the bar without any runtime color flags.
 
@@ -80,7 +80,7 @@ cd ~/builds/dwl
 cp ~/dotfiles/builds/dwl/config.h .
 make clean && make && sudo make install
 
-# dwlb (status bar — fork writes /tmp/dwlb-geometry itself)
+# dwlb (status bar - fork writes /tmp/dwlb-geometry itself)
 git clone <your-dwlb-fork> ~/builds/dwlb-geometry
 cd ~/builds/dwlb-geometry
 make clean && make && sudo make install
@@ -136,4 +136,4 @@ wmenu-caos needs cairo, pango, wayland, xkbcommon, and the `wlr-layer-shell-unst
 - the status feed, wallpaper, and idle→lock chain are all launched from `start-dwl.sh`
 - wmenu uses `-t` for the bar-positioned launcher and `-c` for centered menus; `-B <color>` sets the 2px border, `-N`/`-n`/`-S`/`-s` set panel/selection colors (RRGGBBAA)
 - kapd watches the clipboard and writes history; `kapc search -t text/plain -L` is the query wclipmenu uses
-- widle and wlock are integrated — `widle -t 300 wlock` (in start-dwl.sh) locks after 5min idle; Super+Shift+L locks manually
+- widle and wlock are integrated - `widle -t 300 wlock` (in start-dwl.sh) locks after 5min idle; Super+Shift+L locks manually
