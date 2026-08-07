@@ -16,6 +16,11 @@ export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus
     kapd &
     widle -t 300 wlock &
     playerctl-daemon.sh &
+    (sleep 15 && mkdir -p /tmp/kt && cclip list | awk -F'\t' '/image/ {print $1}' | head -20 | while read -r id; do
+        [ -f "/tmp/kt/$id.png" ] && continue
+        cclip get "$id" | magick - -resize 96x96 "/tmp/kt/$id.png" 2>/dev/null
+        sleep 0.5
+    done) &
     ~/.local/bin/dwlb-status.sh | dwlb -status-stdin all
 ) &
 exec dwl -s 'sh -c "wawa fill ~/walls/wall3.jpg & dwlb -font \"JetBrainsMono Nerd Font:size=16\" -no-ipc -no-hidden"'

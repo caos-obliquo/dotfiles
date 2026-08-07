@@ -1,0 +1,51 @@
+# AI agent memory / instruction files
+CLAUDE.md
+CLAUDE.local.md
+AGENTS.md
+AGENTS.local.md
+.omo/
+.opencode/
+.opencode.json
+.codex/
+.cursor/
+.cursorrules
+.windsurfrules
+.github/copilot-instructions.md
+.todo.md
+
+# Secrets and credentials
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+id_rsa
+id_rsa.pub
+id_ed25519
+id_ed25519.pub
+*.env
+.env.*
+*.secret
+*.credential
+*credentials*
+*token*
+
+# SSH
+.ssh/
+
+# Build artifacts
+bin/
+*.o
+*.a
+*.so
+
+# Kaprica databases (never commit history dbs)
+*.db
+*.sqlite
+*.sqlite3
+
+# Editor swap / backups
+*~
+*.swp
+*.bak
+*.backup

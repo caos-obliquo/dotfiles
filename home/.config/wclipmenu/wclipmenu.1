@@ -1,0 +1,83 @@
+.Dd August 4, 2026
+.Dt WCLIPMENU 1
+.Os
+.Sh NAME
+.Nm wclipmenu
+.Nd pick from kaprica clipboard history via a wmenu picker
+.Sh SYNOPSIS
+.Nm
+.Op Fl h
+.Nm
+.Op Ar list | image
+.Op Fl n Ar count
+.Nm
+.Ar copy Ar id
+.Sh DESCRIPTION
+.Nm
+is a zero-footprint clipboard picker for Wayland. On demand it reads the
+history of the
+.Sy kaprica
+clipboard daemon through its
+.Sy kapc
+CLI, presents the entries in a
+.Sy wmenu
+picker, and copies the selection back to the clipboard before exiting.
+It runs only when invoked, keeps no resident process and polls nothing.
+.Pp
+With no subcommand,
+.Nm
+picks from the text history
+.Pq Sy text/plain
+. With
+.Ar image
+it picks from the image history
+.Pq Sy image/png ,
+rendering thumbnail previews with
+.Sy ImageMagick
+and showing them through the
+.Sy wmenu-caos
+picker, which supports the
+.Sy [img:\&] PNG protocol.
+Text selections are copied back with
+.Sy kapc copy ;
+image selections with
+.Sy kapc paste
+piped into
+.Sy wl-copy --foreground
+so browsers on the
+.Sy wl_data_device
+protocol receive the full image.
+.Pp
+The picker filter is case-insensitive. Pressing
+.Sy Enter
+copies the selected entry, pressing
+.Sy Esc
+cancels.
+.Sh OPTIONS
+.Bl -tag
+.It Fl h
+Print usage and exit.
+.It Ar list
+Print the snippet lines of the text history to stdout instead of picking.
+.It Ar image
+Pick from the image history with thumbnail previews.
+.It Ar copy Ar id
+Copy the history entry with the given id back to the clipboard and exit.
+.It Fl n Ar count
+Limit the number of history entries fetched (default 100, clamped to 1-10000).
+.El
+.Sh ENVIRONMENT
+.Bl -tag
+.It Ev WCLIPMENU_WMENU
+Path to the wmenu binary (default: wmenu from PATH).
+.It Ev WCLIPMENU_LIMIT
+Max entries fetched from kaprica (default: 100).
+.It Ev WCLIPMENU_DB
+Database file passed to kapc as -D (default: kaprica's own).
+.El
+.Sh AUTHORS
+.An Caos
+.Pq https://github.com/caos-obliquo
+.Sh SEE ALSO
+.Xr wmenu 1
+.Xr kaprica 1
