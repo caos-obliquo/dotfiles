@@ -1,9 +1,8 @@
 #!/bin/bash
-# DWL screenshot for Wayland with clipboard support
-# wl-copy --foreground keeps the selection source alive until slow consumers
-# (browsers via wl_data_device) finish pulling — without it, large PNGs get
-# truncated to their top half (white bottom) when wl-copy forks and exits early.
-# Backgrounded so the keybind returns immediately; the copy stays served.
+# dwl screenshot for wayland with clipboard support
+# wl-copy --foreground keeps the selection source alive until consumers finish
+# without it, large pngs get truncated when wl-copy forks and exits early
+# backgrounded so the keybind returns immediately; the copy stays served
 
 case "$1" in
     full)

@@ -1,56 +1,47 @@
 set window-title-basename "true"
 set selection-clipboard "clipboard"
 
-# Dracula color theme for Zathura
-# Swaps Foreground for Background to get a light version if the user prefers
+# dracula color theme for zathura; swap fg for bg to get a light version
 
-#
-# Dracula color theme
-#
+set notification-error-bg       rgba(255,85,85,1)     # red
+set notification-error-fg       rgba(248,248,242,1)   # foreground
+set notification-warning-bg     rgba(255,184,108,1)   # orange
+set notification-warning-fg     rgba(68,71,90,1)      # selection
+set notification-bg             rgba(40,42,54,1)      # background
+set notification-fg             rgba(248,248,242,1)   # foreground
 
-set notification-error-bg       rgba(255,85,85,1)     # Red
-set notification-error-fg       rgba(248,248,242,1)   # Foreground
-set notification-warning-bg     rgba(255,184,108,1)   # Orange
-set notification-warning-fg     rgba(68,71,90,1)      # Selection
-set notification-bg             rgba(40,42,54,1)      # Background
-set notification-fg             rgba(248,248,242,1)   # Foreground
+set completion-bg               rgba(40,42,54,1)      # background
+set completion-fg               rgba(98,114,164,1)    # comment
+set completion-group-bg         rgba(40,42,54,1)      # background
+set completion-group-fg         rgba(98,114,164,1)    # comment
+set completion-highlight-bg     rgba(68,71,90,1)      # selection
+set completion-highlight-fg     rgba(248,248,242,1)   # foreground
 
-set completion-bg               rgba(40,42,54,1)      # Background
-set completion-fg               rgba(98,114,164,1)    # Comment
-set completion-group-bg         rgba(40,42,54,1)      # Background
-set completion-group-fg         rgba(98,114,164,1)    # Comment
-set completion-highlight-bg     rgba(68,71,90,1)      # Selection
-set completion-highlight-fg     rgba(248,248,242,1)   # Foreground
+set index-bg                    rgba(40,42,54,1)      # background
+set index-fg                    rgba(248,248,242,1)   # foreground
+set index-active-bg             rgba(68,71,90,1)      # current line
+set index-active-fg             rgba(248,248,242,1)   # foreground
 
-set index-bg                    rgba(40,42,54,1)      # Background
-set index-fg                    rgba(248,248,242,1)   # Foreground
-set index-active-bg             rgba(68,71,90,1)      # Current Line
-set index-active-fg             rgba(248,248,242,1)   # Foreground
+set inputbar-bg                 rgba(40,42,54,1)      # background
+set inputbar-fg                 rgba(248,248,242,1)   # foreground
+set statusbar-bg                rgba(40,42,54,1)      # background
+set statusbar-fg                rgba(248,248,242,1)   # foreground
 
-set inputbar-bg                 rgba(40,42,54,1)      # Background
-set inputbar-fg                 rgba(248,248,242,1)   # Foreground
-set statusbar-bg                rgba(40,42,54,1)      # Background
-set statusbar-fg                rgba(248,248,242,1)   # Foreground
+set highlight-color             rgba(255,184,108,0.5) # orange
+set highlight-active-color      rgba(255,121,198,0.5) # pink
 
-set highlight-color             rgba(255,184,108,0.5) # Orange
-set highlight-active-color      rgba(255,121,198,0.5) # Pink
-
-set default-bg                  rgba(40,42,54,1)      # Background
-set default-fg                  rgba(248,248,242,1)   # Foreground
+set default-bg                  rgba(40,42,54,1)      # background
+set default-fg                  rgba(248,248,242,1)   # foreground
 
 set render-loading              true
-set render-loading-fg           rgba(40,42,54,1)      # Background
-set render-loading-bg           rgba(248,248,242,1)   # Foreground
+set render-loading-fg           rgba(40,42,54,1)      # background
+set render-loading-bg           rgba(248,248,242,1)   # foreground
 
-#
-# Recolor mode settings
-#
+# recolor mode settings
 
-set recolor-lightcolor          rgba(40,42,54,1)      # Background
-set recolor-darkcolor           rgba(248,248,242,1)   # Foreground
+set recolor-lightcolor          rgba(40,42,54,1)      # background
+set recolor-darkcolor           rgba(248,248,242,1)   # foreground
 
-#
-# Startup options
-#
+# startup options
 set adjust-open width
 set recolor true

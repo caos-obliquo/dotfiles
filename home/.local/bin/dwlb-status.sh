@@ -1,6 +1,6 @@
 #!/bin/bash
 while true; do
-    # Volume (pink) - dynamic icon based on level
+    # volume (pink) - dynamic icon based on level
     if command -v pamixer &> /dev/null; then
         vol=$(pamixer --get-volume)
         if [ "$(pamixer --get-mute)" = "true" ]; then
@@ -17,13 +17,13 @@ while true; do
         vol_display=""
     fi
     
-    # CPU (red)
+    # cpu (red)
     cpu=$(top -bn1 | grep "Cpu(s)" | sed "s/.*, *\([0-9.]*\)%* id.*/\1/" | awk '{printf "%.0f", 100 - $1}')
     
-    # Memory (yellow)
+    # memory (yellow)
     mem=$(free -h | awk '/^Mem:/ {print $3}')
     
-    # Temperature (orange)
+    # temperature (orange)
     if command -v sensors &> /dev/null; then
         temp=$(sensors 2>/dev/null | grep -m1 'Package id 0:\|Core 0:' | awk '{print $3}' | tr -d '+°C')
         [ -z "$temp" ] && temp=$(cat /sys/class/thermal/thermal_zone0/temp 2>/dev/null | awk '{printf "%.0f", $1/1000}')
@@ -32,7 +32,7 @@ while true; do
         temp_display=""
     fi
     
-    # Network (green) - dynamic WiFi icon based on signal strength
+    # network (green) - dynamic wifi icon based on signal strength
     if grep -q "^\s*w" /proc/net/wireless 2>/dev/null; then
         wifi=$(grep "^\s*w" /proc/net/wireless | awk '{print int($3 * 100 / 70)}')
         if [ "$wifi" -ge 80 ]; then
@@ -51,12 +51,12 @@ while true; do
         net_display="^fg(6272a4)󰤮^fg()"
     fi
     
-    # Battery (cyan/green) - dynamic icon based on level
+    # battery (cyan/green) - dynamic icon based on level
     if [ -d /sys/class/power_supply/BAT0 ]; then
         bat=$(cat /sys/class/power_supply/BAT0/capacity)
         status=$(cat /sys/class/power_supply/BAT0/status)
         
-        # Choose icon based on battery level
+        # choose icon based on battery level
         if [ "$bat" -ge 90 ]; then
             bat_icon="󰁹"
         elif [ "$bat" -ge 80 ]; then
@@ -77,7 +77,7 @@ while true; do
             bat_icon="󰁺"
         fi
         
-        # Color: green if charging, cyan if discharging
+        # color: green if charging, cyan if discharging
         if [ "$status" = "Charging" ]; then
             bat_display="^fg(50fa7b)󰂄 $bat%^fg()"
         else
@@ -87,10 +87,10 @@ while true; do
         bat_display=""
     fi
     
-    # Time (purple) - no icon
+    # time (purple) - no icon
     time=$(date '+%H:%M')
     
-    # Build status
+    # build status
     echo "$vol_display | ^fg(ff5555)󰻠 $cpu%^fg() | ^fg(f1fa8c)󰍛 $mem^fg() | $temp_display | $net_display | $bat_display | ^fg(bd93f9)$time^fg()"
     
     sleep 2

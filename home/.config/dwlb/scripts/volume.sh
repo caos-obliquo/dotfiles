@@ -1,10 +1,10 @@
 #!/bin/bash
-# Volume block with dynamic icons (dwlb format)
+# volume block with dynamic icons (dwlb format)
 
 if command -v pamixer &> /dev/null; then
     vol=$(pamixer --get-volume)
     
-    # Choose icon based on mute status and volume level
+    # choose icon based on mute status and volume level
     if [ "$(pamixer --get-mute)" = "true" ]; then
         icon="󰖁"
     elif [ "$vol" -ge 70 ]; then

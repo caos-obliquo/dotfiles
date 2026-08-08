@@ -1,33 +1,31 @@
-# ============================================
-# ZSH CONFIG - zsh-vi-mode plugin
-# ============================================
+# zsh config - zsh-vi-mode plugin
 
-# ZSH-VI-MODE PLUGIN
+# zsh-vi-mode plugin
 source ~/.zsh-vi-mode/zsh-vi-mode.plugin.zsh
 
-# Configure cursors
+# configure cursors
 ZVM_INSERT_MODE_CURSOR=$ZVM_CURSOR_BEAM
 ZVM_NORMAL_MODE_CURSOR=$ZVM_CURSOR_BLOCK
 ZVM_VISUAL_MODE_CURSOR=$ZVM_CURSOR_UNDERLINE
 ZVM_VISUAL_LINE_MODE_CURSOR=$ZVM_CURSOR_UNDERLINE
 
-# Enable colors
+# enable colors
 autoload -U colors && colors
 
-# Dracula prompt: user@host path$ / > (❯)
+# dracula prompt: user@host path$ / > (❯)
 PS1=$'%B%F{magenta}%n%f%F{white}@%f%F{blue}%M %F{magenta}%~%f%b%F{white}$%f\n%B%F{212}❯%f%b '
 
-# History
+# history
 HISTSIZE=10000000
 SAVEHIST=10000000
 HISTFILE="${XDG_CACHE_HOME:-$HOME/.cache}/zsh/history"
 
-# Load external configs
+# load external configs
 [ -f "${XDG_CONFIG_HOME:-$HOME/.config}/shell/shortcutrc" ] && source "${XDG_CONFIG_HOME:-$HOME/.config}/shell/shortcutrc"
 [ -f "${XDG_CONFIG_HOME:-$HOME/.config}/shell/aliasrc" ] && source "${XDG_CONFIG_HOME:-$HOME/.config}/shell/aliasrc"
 [ -f "${XDG_CONFIG_HOME:-$HOME/.config}/shell/zshnameddirrc" ] && source "${XDG_CONFIG_HOME:-$HOME/.config}/shell/zshnameddirrc"
 
-# Completion
+# completion
 autoload -U compinit
 zstyle ':completion:*' menu select
 zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
@@ -35,13 +33,13 @@ zmodload zsh/complist
 compinit
 _comp_options+=(globdots)
 
-# Menu select with vim keys
+# menu select with vim keys
 bindkey -M menuselect 'h' vi-backward-char
 bindkey -M menuselect 'k' vi-up-line-or-history
 bindkey -M menuselect 'l' vi-forward-char
 bindkey -M menuselect 'j' vi-down-line-or-history
 
-# LF FILE MANAGER (Ctrl+O)
+# lf file manager (ctrl+o)
 lfcd () {
     tmp="$(mktemp -uq)"
     trap 'rm -f $tmp >/dev/null 2>&1 && trap - HUP INT QUIT TERM PWR EXIT' HUP INT QUIT TERM PWR EXIT
@@ -53,13 +51,11 @@ lfcd () {
 }
 bindkey -s '^o' '^ulfcd\n'
 
-# EDIT IN VIM (Ctrl+E)
+# edit command line in vim (ctrl+e)
 autoload edit-command-line; zle -N edit-command-line
 bindkey '^e' edit-command-line
 
-# =============================================================================
-# ENVIRONMENT & PATH
-# =============================================================================
+# environment & path
 
 export PATH="$HOME/.local/bin:$PATH"
 export PATH="$HOME/.cargo/bin:$PATH"
@@ -68,12 +64,10 @@ export PATH=~/.npm-global/bin:$PATH
 export XKB_DEFAULT_LAYOUT=br
 export XKB_DEFAULT_VARIANT=abnt2
 
-# =============================================================================
-# CCZE - DRACULA SEMANTIC SCHEME
-# =============================================================================
-# Tier 1 SIGNAL    — error/warning: must scream
-# Tier 2 STRUCTURE — timestamp/host/pid: recede, always repeated
-# Tier 3 DATA      — process/ip/path: readable, meaningful
+# ccze - dracula semantic scheme
+# tier 1 signal - errors and warnings
+# tier 2 structure - repeated tokens (timestamp, host, pid)
+# tier 3 data - process names, ips, paths
 
 unalias journalctl 2>/dev/null
 unalias dmesg 2>/dev/null
@@ -82,51 +76,49 @@ ccze_dracula() {
     ccze -F ~/.config/ccze/cczerc -A -o nolookups "$@"
 }
 
-# SYSTEM LOGS
+# system logs
 journalctl() { command journalctl --no-pager "$@" | ccze_dracula -A; }
 dmesg()      { command dmesg "$@" | ccze_dracula -A; }
 
-# SYSTEMD
+# systemd
 systemctl()  { command systemctl --no-pager "$@" | ccze_dracula -A; }
 
-# NETWORKING
+# networking
 ping()       { command ping "$@" 2>&1 | ccze_dracula -A; }
 traceroute() { command traceroute "$@" 2>&1 | ccze_dracula -A; }
 netstat()    { command netstat "$@" 2>&1 | ccze_dracula -A; }
 
-# PROCESSES
+# processes
 ps()         { command ps "$@" | ccze_dracula -A; }
 
-# USERS & PERMISSIONS
+# users and permissions
 who()        { command who "$@" | ccze_dracula -A; }
 w()          { command w "$@" | ccze_dracula -A; }
 last()       { command last "$@" | ccze_dracula -A; }
 
-# DISK
+# disk
 df()         { command df "$@" | ccze_dracula -A; }
 du()         { command du "$@" | ccze_dracula -A; }
 mount()      { command mount "$@" | ccze_dracula -A; }
 
-# ENVIRONMENT
+# environment
 env()        { command env "$@" | ccze_dracula -A; }
 printenv()   { command printenv "$@" | ccze_dracula -A; }
 
-# DOCKER / K8S
+# docker / k8s
 docker()         { command docker "$@" 2>&1 | ccze_dracula -A; }
 docker-compose() { command docker-compose "$@" 2>&1 | ccze_dracula -A; }
 kubectl()        { command kubectl "$@" 2>&1 | ccze_dracula -A; }
 helm()           { command helm "$@" 2>&1 | ccze_dracula -A; }
 
-# FILE BROWSING
+# file browsing
 tree()       { command tree "$@" | ccze_dracula -A; }
 find()       { command find "$@" | ccze_dracula -A; }
 
 uptime()     { command uptime "$@" | ccze_dracula -A; }
-# date() and cat() intentionally NOT wrapped
+# date and cat intentionally not wrapped
 
-# =============================================================================
-# NATIVE COLORS
-# =============================================================================
+# native colors
 
 alias ls='ls --color=auto'
 alias ll='ls -la'
@@ -137,9 +129,7 @@ alias ip='ip -color=auto'
 alias vim='nvim'
 alias nano='nvim'
 
-# =============================================================================
-# DRACULA MAN PAGES
-# =============================================================================
+# dracula man pages
 
 export MANPAGER="/usr/bin/less -s -M +Gg"
 export LESS_TERMCAP_mb=$'\e[1;31m'
@@ -154,11 +144,9 @@ export GROFF_NO_SGR=1
 export TERM=xterm-256color
 export SYSTEMD_COLORS=true
 
-# =============================================================================
-# PLUGINS
-# =============================================================================
+# plugins
 
-# Syntax highlighting
+# syntax highlighting
 # green=valid, cyan=builtin/path, orange=function, yellow=string, red=unknown
 if [ -f /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]; then
     source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
@@ -171,33 +159,29 @@ if [ -f /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.z
     ZSH_HIGHLIGHT_STYLES[unknown-token]='fg=#ff5555'
 fi
 
-# Autosuggestions — comment gray = ghost text, clearly not yet typed
+# autosuggestions - comment gray = ghost text, clearly not yet typed
 if [ -f /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh ]; then
     source /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
     ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=#6272a4'
 fi
 
-# ZSH-Z
+# zsh-z
 if [ -f ~/.local/share/zsh/plugins/zsh-z/zsh-z.plugin.zsh ]; then
     source ~/.local/share/zsh/plugins/zsh-z/zsh-z.plugin.zsh
     ZSHZ_DATA="${XDG_CACHE_HOME:-$HOME/.cache}/zsh/z-data"
 fi
 
-# =============================================================================
-# ATUIN
-# =============================================================================
+# atuin
 
 eval "$(atuin init zsh --disable-up-arrow --disable-ctrl-r)"
 
-# Bind Ctrl+Up to atuin search
+# bind ctrl+up to atuin search
 bindkey '^[[1;5A' atuin-search
 
-# Vi mode: bind 'k' in normal mode to atuin search
+# vi mode: bind 'k' in normal mode to atuin search
 bindkey -M vicmd 'k' atuin-search
 
-# =============================================================================
-# ALIASES
-# =============================================================================
+# aliases
 
 alias update="source ~/.config/zsh/.zshrc"
 
@@ -208,7 +192,7 @@ export GEMINI_API_KEY=""
 
 export CEREBRAS_API_KEY=""
 
-# Auto-start LiteLLM proxy
+# auto-start litellm proxy
 if ! pgrep -f "litellm.*4000" > /dev/null 2>&1; then
   nohup litellm --config ~/.pi/litellm-config.yaml --port 4000 \
     > ~/.pi/litellm.log 2>&1 &

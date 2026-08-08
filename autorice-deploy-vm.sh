@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # autorice-deploy-vm.sh
-# VM edition — dwl DraculaWL Rice Deployment
+# VM edition - dwl DraculaWL rice deployment
 #
 # Skipped vs bare-metal:
 #   - AMD GPU drivers + early KMS  (no amdgpu in VM)
@@ -19,9 +19,7 @@
 
 set -euo pipefail
 
-# ============================================
-# Configuration
-# ============================================
+# configuration
 
 DOTFILES_REPO="https://github.com/caos-obliquo/dotfiles"
 DOTFILES_DIR="$HOME/dotfiles"
@@ -42,9 +40,7 @@ BLUE='\033[0;34m'
 CYAN='\033[0;36m'
 NC='\033[0m'
 
-# ============================================
-# Helpers
-# ============================================
+# helpers
 
 log() { echo -e "${BLUE}[$(date +'%H:%M:%S')]${NC} $*"; }
 success() { echo -e "${GREEN}[✓]${NC} $*"; }
@@ -63,9 +59,7 @@ section() {
     echo ""
 }
 
-# ============================================
-# System Checks
-# ============================================
+# system checks
 
 check_system() {
     section "System Checks"
@@ -86,9 +80,7 @@ check_system() {
     success "VM detected: $VIRT"
 }
 
-# ============================================
-# Pacman
-# ============================================
+# pacman
 
 setup_pacman() {
     section "Configuring Pacman"
@@ -125,9 +117,7 @@ setup_pacman() {
     success "Pacman configured"
 }
 
-# ============================================
-# Base System
-# ============================================
+# base system
 
 install_base_system() {
     section "Installing Base System Packages"
@@ -149,9 +139,7 @@ install_base_system() {
     success "Base packages installed"
 }
 
-# ============================================
-# VM Guest Utilities
-# ============================================
+# vm guest utilities
 
 setup_vm_guest() {
     section "Installing VM Guest Utilities"
@@ -168,9 +156,7 @@ setup_vm_guest() {
     success "VM guest utilities configured"
 }
 
-# ============================================
-# Wayland Stack
-# ============================================
+# wayland stack
 
 install_wayland_stack() {
     section "Installing Wayland Stack"
@@ -178,7 +164,7 @@ install_wayland_stack() {
     # Ensure pacman db is fresh before checking wlroots0.18
     sudo pacman -Sy --noconfirm
 
-    # wlroots0.18 is in [extra] — install it with all required deps explicitly
+    # wlroots0.18 is in [extra] - install it with all required deps explicitly
     # deps: seatd, libdisplay-info, libliftoff, vulkan-icd-loader, lcms2
     if sudo pacman -S --needed --noconfirm \
         wayland wayland-protocols \
@@ -203,14 +189,12 @@ install_wayland_stack() {
         meson ninja; then
         success "Wayland stack installed from [extra]"
     else
-        warn "wlroots0.18 from pacman failed — building from source (v0.18.3)"
+        warn "wlroots0.18 from pacman failed - building from source (v0.18.3)"
         build_wlroots_from_source
     fi
 }
 
-# ============================================
-# Build wlroots from source (fallback)
-# ============================================
+# build wlroots from source (fallback)
 
 build_wlroots_from_source() {
     section "Building wlroots 0.18 from source"
@@ -247,9 +231,7 @@ build_wlroots_from_source() {
     success "wlroots 0.18 built and installed from source"
 }
 
-# ============================================
-# Applications
-# ============================================
+# applications
 
 install_applications() {
     section "Installing Applications"
@@ -281,9 +263,7 @@ install_applications() {
     success "Applications installed"
 }
 
-# ============================================
-# XDG Portals
-# ============================================
+# xdg portals
 
 install_portals() {
     section "Installing XDG Portals"
@@ -296,9 +276,7 @@ install_portals() {
     success "XDG Portals installed"
 }
 
-# ============================================
-# Network
-# ============================================
+# network
 
 setup_network() {
     section "Configuring Network"
@@ -310,9 +288,7 @@ setup_network() {
     success "NetworkManager configured"
 }
 
-# ============================================
-# Clone Dotfiles
-# ============================================
+# clone dotfiles
 
 clone_dotfiles() {
     section "Cloning Dotfiles"
@@ -331,12 +307,10 @@ clone_dotfiles() {
     success "Dotfiles deployed"
 }
 
-# ============================================
-# Build dwl (caos-obliquo fork) — patched for Virtual-1
-# ============================================
+# build dwl (caos-obliquo fork) - patched for Virtual-1
 
 build_dwl() {
-    section "Building dwl (caos-obliquo fork — VM/Virtual-1)"
+    section "Building dwl (caos-obliquo fork - VM/Virtual-1)"
 
     mkdir -p "$BUILDS_DIR"
     cd "$BUILDS_DIR"
@@ -350,7 +324,7 @@ build_dwl() {
     cd dwl
     git checkout 0.7 || error "dwl branch 0.7 not found"
 
-    # wlroots-0.18 installs as wlroots-0.18.pc — dwl needs wlroots.pc
+    # wlroots-0.18 installs as wlroots-0.18.pc - dwl needs wlroots.pc
     WLROOTS_PC=$(pkg-config --variable=pcfiledir wlroots-0.18 2>/dev/null || find /usr/lib/pkgconfig /usr/local/lib/pkgconfig -name "wlroots-0.18.pc" 2>/dev/null | head -1 | xargs dirname)
     if [ -n "$WLROOTS_PC" ] && [ ! -f "$WLROOTS_PC/wlroots.pc" ]; then
         sudo ln -sf "$WLROOTS_PC/wlroots-0.18.pc" "$WLROOTS_PC/wlroots.pc"
@@ -374,9 +348,7 @@ build_dwl() {
     success "dwl installed (Virtual-1)"
 }
 
-# ============================================
-# Build dwlb-geometry
-# ============================================
+# build dwlb-geometry
 
 build_dwlb() {
     section "Building dwlb-geometry"
@@ -404,9 +376,7 @@ build_dwlb() {
     success "dwlb-geometry installed"
 }
 
-# ============================================
-# Build wmenu-caos (meson)
-# ============================================
+# build wmenu-caos (meson)
 
 build_wmenu() {
     section "Building wmenu-caos"
@@ -432,9 +402,7 @@ build_wmenu() {
     success "wmenu-caos installed"
 }
 
-# ============================================
-# Build widle (Codeberg — sewn/widle)
-# ============================================
+# build widle (codeberg - sewn/widle)
 
 build_widle() {
     section "Building widle"
@@ -463,9 +431,7 @@ build_widle() {
     success "widle installed"
 }
 
-# ============================================
-# Patch start-dwl.sh for VM
-# ============================================
+# patch start-dwl.sh for vm
 
 patch_startup_for_vm() {
     section "Patching start-dwl.sh for VM"
@@ -473,7 +439,7 @@ patch_startup_for_vm() {
     STARTUP="$LOCAL_BIN/start-dwl.sh"
 
     if [ ! -f "$STARTUP" ]; then
-        warn "start-dwl.sh not found at $LOCAL_BIN — skipping patch"
+        warn "start-dwl.sh not found at $LOCAL_BIN - skipping patch"
         return
     fi
 
@@ -485,9 +451,7 @@ patch_startup_for_vm() {
     fi
 }
 
-# ============================================
-# Build ccze from source (cornet/ccze)
-# ============================================
+# build ccze from source (cornet/ccze)
 
 build_ccze() {
     section "Building ccze"
@@ -512,9 +476,7 @@ build_ccze() {
     success "ccze installed"
 }
 
-# ============================================
 # zsh plugins
-# ============================================
 
 setup_zsh_plugins() {
     section "Setting Up zsh Plugins"
@@ -543,9 +505,7 @@ setup_zsh_plugins() {
     success "zsh plugins ready"
 }
 
-# ============================================
 # tmux plugins
-# ============================================
 
 setup_tmux_plugins() {
     section "Setting Up tmux Plugins (TPM)"
@@ -558,30 +518,26 @@ setup_tmux_plugins() {
         git -C "$HOME/.local/share/tmux/plugins/tpm" pull
     fi
 
-    success "TPM installed — run prefix+I inside tmux to install plugins"
+    success "TPM installed - run prefix+I inside tmux to install plugins"
 }
 
-# ============================================
-# Walls
-# ============================================
+# walls
 
 setup_walls() {
     section "Setting Up Wallpapers Directory"
     mkdir -p "$WALLS_DIR"
-    warn "Place wallpapers in $WALLS_DIR — start-dwl.sh expects wall3.jpg"
+    warn "Place wallpapers in $WALLS_DIR - start-dwl.sh expects wall3.jpg"
     success "Walls dir ready"
 }
 
-# ============================================
-# Setup Neovim (caos.nvim)
-# ============================================
+# setup neovim (caos.nvim)
 
 setup_neovim() {
     section "Setting Up Neovim (caos.nvim)"
 
     # Remove if exists but is not a git repo (e.g. copied from dotfiles home/)
     if [ -d "$CONFIG_DIR/nvim" ] && [ ! -d "$CONFIG_DIR/nvim/.git" ]; then
-        log "nvim dir exists but is not a git repo — removing..."
+        log "nvim dir exists but is not a git repo - removing..."
         rm -rf "$CONFIG_DIR/nvim"
     fi
 
@@ -610,22 +566,20 @@ setup_neovim() {
     sudo pacman -S --needed --noconfirm python-pip 2>/dev/null || true
     pip install pynvim --break-system-packages 2>/dev/null ||
         pip3 install pynvim --break-system-packages 2>/dev/null ||
-        warn "pynvim install failed — install manually: pip install pynvim"
+        warn "pynvim install failed - install manually: pip install pynvim"
 
-    success "Neovim deployed — open nvim, run :Lazy sync then :Mason"
+    success "Neovim deployed - open nvim, run :Lazy sync then :Mason"
     warn "Mason packages: :MasonInstall yamllint jsonlint hadolint tflint shellcheck eslint_d htmlhint stylelint ruff cpplint golangci-lint markdownlint luacheck shfmt prettier stylua google-java-format goimports"
 }
 
-# ============================================
-# Summary
-# ============================================
+# summary
 
 print_summary() {
     section "Installation Complete!"
 
     echo ""
     echo -e "${GREEN}╔════════════════════════════════════════════════════════╗${NC}"
-    echo -e "${GREEN}║         DraculaWL — VM Edition Ready                  ║${NC}"
+    echo -e "${GREEN}║         DraculaWL - VM Edition Ready                  ║${NC}"
     echo -e "${GREEN}╚════════════════════════════════════════════════════════╝${NC}"
     echo ""
     echo -e "${CYAN}VM-specific changes applied:${NC}"
@@ -639,14 +593,12 @@ print_summary() {
     echo -e "${CYAN}Next steps:${NC}"
     echo -e "  ${BLUE}1.${NC} Add wallpaper: ${YELLOW}~/walls/wall3.jpg${NC}"
     echo -e "  ${BLUE}2.${NC} Reboot: ${YELLOW}sudo reboot${NC}"
-    echo -e "  ${BLUE}3.${NC} Login to TTY1 — dwl starts via .zprofile"
+    echo -e "  ${BLUE}3.${NC} Login to TTY1 - dwl starts via .zprofile"
     echo -e "  ${BLUE}4.${NC} Inside tmux: ${YELLOW}prefix+I${NC} to install plugins"
     echo ""
 }
 
-# ============================================
-# Main
-# ============================================
+# main
 
 main() {
     clear
@@ -654,7 +606,7 @@ main() {
     cat <<"BANNER"
 ╔══════════════════════════════════════════════════════════╗
 ║                                                          ║
-║     dwl DraculaWL Autorice — VM Edition                  ║
+║     dwl DraculaWL Autorice - VM Edition                  ║
 ║     caos-obliquo/dwl · dwlb · wmenu-caos                ║
 ║                                                          ║
 ╚══════════════════════════════════════════════════════════╝

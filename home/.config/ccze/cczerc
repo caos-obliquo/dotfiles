@@ -1,7 +1,7 @@
-# DRACULA SEMANTIC SCHEME
-# Tier 1 SIGNAL    — must scream
-# Tier 2 STRUCTURE — recede, repeated on every line
-# Tier 3 DATA      — readable, meaningful
+# dracula semantic scheme
+# tier 1 signal - errors and warnings
+# tier 2 structure - repeated tokens (date, host, pid)
+# tier 3 data - process names, paths, addresses
 
 error           bold red
 deny            bold red

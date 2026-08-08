@@ -1,4 +1,4 @@
-# AI agent memory / instruction files
+# ai agent memory / instruction files
 CLAUDE.md
 CLAUDE.local.md
 AGENTS.md
@@ -13,7 +13,7 @@ AGENTS.local.md
 .github/copilot-instructions.md
 .todo.md
 
-# Secrets and credentials
+# secrets and credentials
 *.pem
 *.key
 *.p12
@@ -30,27 +30,27 @@ id_ed25519.pub
 *credentials*
 *token*
 
-# SSH
+# ssh
 .ssh/
 
-# Backup directories
+# backup directories
 *backup*/
 *.backup/
 backups/
 
-# Auto-generated configs (don't track these)
+# auto-generated configs (don't track these)
 home/.config/mozilla/
 home/.config/dconf/
 home/.config/pulse/
 home/.config/procps/
 
-# Build artifacts and binaries
+# build artifacts and binaries
 *.o
 *.so
 *.a
 *.out
 
-# Compiled binaries (keep source, ignore built binaries)
+# compiled binaries (keep source, ignore built binaries)
 home/.config/dwl/dwl
 home/.config/dwlb/dwlb
 home/.config/dwlb-geometry/dwlb
@@ -59,21 +59,21 @@ home/.config/wmenu/wmenu
 home/.config/wmenu-caos/wmenu
 home/.config/wmenu-caos/wmenu-run
 
-# Go dependencies and binaries
+# go dependencies and binaries
 home/.config/go/pkg/
 home/.config/go/bin/
 home/.config/*/go.sum
 home/.config/*/vendor/
 home/.config/youtui/youtui
 
-# Editor and system files
+# editor and system files
 *~
 *.swp
 *.swo
 .DS_Store
 *.log
 
-# Cache directories
+# cache directories
 .cache/
 __pycache__/
 *.pyc

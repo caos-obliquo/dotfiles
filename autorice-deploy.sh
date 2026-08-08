@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 #
 # autorice-deploy.sh
-# EliteBook 645 G11 — dwl DraculaWL Rice Deployment
+# EliteBook 645 G11 - dwl DraculaWL rice deployment
 #
-# Stack: dwl (caos-obliquo fork) + dwlb-geometry + wmenu-caos + foot + tmux + nvim
+# Stack: dwl + dwlb-geometry + wmenu-caos + foot + tmux + nvim
 #        zsh + atuin + ccze + mako + zathura + kaprica + widle + wlock
 #
 # Assumes: Fresh Arch install, user account created, sudo working
@@ -12,9 +12,7 @@
 
 set -euo pipefail
 
-# ============================================
-# Configuration
-# ============================================
+# configuration
 
 DOTFILES_REPO="https://github.com/caos-obliquo/dotfiles"
 DOTFILES_DIR="$HOME/dotfiles"
@@ -35,9 +33,7 @@ BLUE='\033[0;34m'
 CYAN='\033[0;36m'
 NC='\033[0m'
 
-# ============================================
-# Helpers
-# ============================================
+# helpers
 
 log() { echo -e "${BLUE}[$(date +'%H:%M:%S')]${NC} $*"; }
 success() { echo -e "${GREEN}[✓]${NC} $*"; }
@@ -56,9 +52,7 @@ section() {
     echo ""
 }
 
-# ============================================
-# System Checks
-# ============================================
+# system checks
 
 check_system() {
     section "System Checks"
@@ -76,9 +70,7 @@ check_system() {
     success "Sudo confirmed"
 }
 
-# ============================================
-# Pacman
-# ============================================
+# pacman
 
 setup_pacman() {
     section "Configuring Pacman"
@@ -97,9 +89,7 @@ setup_pacman() {
     success "Pacman configured"
 }
 
-# ============================================
-# Base System
-# ============================================
+# base system
 
 install_base_system() {
     section "Installing Base System Packages"
@@ -122,9 +112,7 @@ install_base_system() {
     success "Base packages installed"
 }
 
-# ============================================
-# AMD GPU
-# ============================================
+# amd gpu
 
 setup_amd_gpu() {
     section "Configuring AMD GPU (Radeon 660M)"
@@ -148,9 +136,7 @@ setup_amd_gpu() {
     success "AMD GPU configured"
 }
 
-# ============================================
-# Wayland Stack
-# ============================================
+# wayland stack
 
 install_wayland_stack() {
     section "Installing Wayland Stack"
@@ -170,9 +156,7 @@ install_wayland_stack() {
     success "Wayland stack installed"
 }
 
-# ============================================
-# Applications
-# ============================================
+# applications
 
 install_applications() {
     section "Installing Applications"
@@ -205,9 +189,7 @@ install_applications() {
     success "Applications installed"
 }
 
-# ============================================
-# XDG Portals
-# ============================================
+# xdg portals
 
 install_portals() {
     section "Installing XDG Portals"
@@ -220,9 +202,7 @@ install_portals() {
     success "XDG Portals installed"
 }
 
-# ============================================
-# Power Management
-# ============================================
+# power management
 
 setup_power_management() {
     section "Configuring Power Management (TLP)"
@@ -236,9 +216,7 @@ setup_power_management() {
     success "TLP configured"
 }
 
-# ============================================
-# Network
-# ============================================
+# network
 
 setup_network() {
     section "Configuring Network"
@@ -250,9 +228,7 @@ setup_network() {
     success "NetworkManager configured"
 }
 
-# ============================================
-# Clone Dotfiles
-# ============================================
+# clone dotfiles
 
 clone_dotfiles() {
     section "Cloning Dotfiles"
@@ -271,9 +247,7 @@ clone_dotfiles() {
     success "Dotfiles deployed"
 }
 
-# ============================================
-# Build dwl (caos-obliquo fork)
-# ============================================
+# build dwl (caos-obliquo fork)
 
 build_dwl() {
     section "Building dwl (caos-obliquo fork)"
@@ -302,9 +276,7 @@ build_dwl() {
     success "dwl installed"
 }
 
-# ============================================
-# Build dwlb-geometry
-# ============================================
+# build dwlb-geometry
 
 build_dwlb() {
     section "Building dwlb-geometry"
@@ -333,9 +305,7 @@ build_dwlb() {
     success "dwlb-geometry installed"
 }
 
-# ============================================
-# Build wmenu-caos (meson)
-# ============================================
+# build wmenu-caos (meson)
 
 build_wmenu() {
     section "Building wmenu-caos"
@@ -347,7 +317,7 @@ build_wmenu() {
         log "wmenu-caos exists, updating..."
         git -C wmenu-caos pull || true
     else
-        # SSH key required — falls back to https if not set up
+        # ssh key required - falls back to https if not set up
         git clone "$WMENU_REPO" wmenu-caos 2>/dev/null ||
             git clone "https://github.com/caos-obliquo/wmenu-caos.git" wmenu-caos
     fi
@@ -364,9 +334,7 @@ build_wmenu() {
     success "wmenu-caos installed"
 }
 
-# ============================================
 # zsh plugins (not in pacman)
-# ============================================
 
 setup_zsh_plugins() {
     section "Setting Up zsh Plugins"
@@ -398,9 +366,7 @@ setup_zsh_plugins() {
     success "zsh plugins ready"
 }
 
-# ============================================
-# tmux plugins (TPM)
-# ============================================
+# tmux plugins (tpm)
 
 setup_tmux_plugins() {
     section "Setting Up tmux Plugins (TPM)"
@@ -413,25 +379,21 @@ setup_tmux_plugins() {
         git -C "$HOME/.local/share/tmux/plugins/tpm" pull
     fi
 
-    success "TPM installed — run prefix+I inside tmux to install plugins"
+    success "TPM installed - run prefix+I inside tmux to install plugins"
 }
 
-# ============================================
-# Walls dir placeholder
-# ============================================
+# walls dir placeholder
 
 setup_walls() {
     section "Setting Up Wallpapers Directory"
 
     mkdir -p "$WALLS_DIR"
-    warn "Place your wallpapers in $WALLS_DIR — start-dwl.sh expects wall3.jpg"
+    warn "Place your wallpapers in $WALLS_DIR - start-dwl.sh expects wall3.jpg"
 
     success "Walls dir ready"
 }
 
-# ============================================
 # atuin
-# ============================================
 
 setup_atuin() {
     section "Configuring atuin"
@@ -441,9 +403,7 @@ setup_atuin() {
     success "atuin ready"
 }
 
-# ============================================
-# Setup Neovim (caos.nvim)
-# ============================================
+# setup neovim (caos.nvim)
 
 setup_neovim() {
     section "Setting Up Neovim (caos.nvim)"
@@ -479,29 +439,27 @@ setup_neovim() {
     if command -v yay &>/dev/null; then
         yay -S --needed --noconfirm pmd || warn "pmd AUR install failed"
     else
-        warn "pmd not installed — no AUR helper. Install manually or via yay."
+        warn "pmd not installed - no AUR helper. Install manually or via yay."
     fi
 
-    success "Neovim deployed — open nvim, run :Lazy sync then :Mason"
+    success "Neovim deployed - open nvim, run :Lazy sync then :Mason"
     warn "Mason packages: :MasonInstall yamllint jsonlint hadolint tflint shellcheck eslint_d htmlhint stylelint ruff cpplint golangci-lint markdownlint luacheck shfmt prettier stylua google-java-format goimports"
 }
 
-# ============================================
-# Summary
-# ============================================
+# summary
 
 print_summary() {
     section "Installation Complete!"
 
     echo ""
     echo -e "${GREEN}╔════════════════════════════════════════════════════════╗${NC}"
-    echo -e "${GREEN}║        EliteBook 645 G11 — DraculaWL Ready            ║${NC}"
+    echo -e "${GREEN}║        EliteBook 645 G11 - DraculaWL Ready            ║${NC}"
     echo -e "${GREEN}╚════════════════════════════════════════════════════════╝${NC}"
     echo ""
     echo -e "${CYAN}Next steps:${NC}"
     echo -e "  ${BLUE}1.${NC} Add wallpaper to ${YELLOW}~/walls/wall3.jpg${NC}"
     echo -e "  ${BLUE}2.${NC} Reboot: ${YELLOW}sudo reboot${NC}"
-    echo -e "  ${BLUE}3.${NC} Login to TTY1 — dwl starts via .zprofile"
+    echo -e "  ${BLUE}3.${NC} Login to TTY1 - dwl starts via .zprofile"
     echo -e "  ${BLUE}4.${NC} Inside tmux: ${YELLOW}prefix+I${NC} to install plugins"
     echo ""
     echo -e "${CYAN}Key bindings:${NC}"
@@ -514,9 +472,7 @@ print_summary() {
     echo ""
 }
 
-# ============================================
-# Main
-# ============================================
+# main
 
 main() {
     clear
@@ -524,7 +480,7 @@ main() {
     cat <<"BANNER"
 ╔══════════════════════════════════════════════════════════╗
 ║                                                          ║
-║     EliteBook 645 G11 — dwl DraculaWL Autorice           ║
+║     EliteBook 645 G11 - dwl DraculaWL Autorice           ║
 ║     caos-obliquo/dwl · dwlb · wmenu-caos                ║
 ║                                                          ║
 ╚══════════════════════════════════════════════════════════╝
