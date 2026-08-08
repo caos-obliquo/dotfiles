@@ -32,7 +32,7 @@ locked by the test suites in this repo. "Locked" = asserted in a passing suite.
 - `kapc copy` forks a clipboard-owner child that must stay alive to serve the Wayland
   selection; do NOT assert on its exit status (0 or 137 are both valid). (locked:
   text/copy suites.)
-- `kapc search` default line format: `ID: <n>\t"<snippet>"` — snippet newline-trimmed.
+- `kapc search` default line format: `ID: <n>\t"<snippet>"` - snippet newline-trimmed.
 - `kapc paste -i <id>` writes the stored bytes to stdout (roundtrip byte-exact; locked).
 
 ## Search

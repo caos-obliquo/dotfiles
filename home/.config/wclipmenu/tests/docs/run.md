@@ -29,7 +29,7 @@ make clean && make && make test
 - Each suite calls kt_scratch_dir() to create its db dir, then spawns kapd via
   fork/execv(`/usr/local/bin/kapd`, `-D <db>`).
 - Ownership is proven by probing the OWN db with `kapc search -D <db> -l 1` before
-  relying on it (kapd_serves_own_db() pattern) — guards against losing the singleton slot.
+  relying on it (kapd_serves_own_db() pattern) - guards against losing the singleton slot.
 - The suites kill their kapd in suite_fini.
 
 ## Hermeticity
@@ -45,4 +45,4 @@ make clean && make && make test
 
 - Suite logs use [ PASS ]/[ RUN ] markers with src:line for every assert.
 - kapc `copy` forks a clipboard-owner grandchild that survives the parent; expect
-  exit status 0 or 137 — the harness kills it at exit.
+  exit status 0 or 137 - the harness kills it at exit.
