@@ -1,5 +1,5 @@
 #!/bin/bash
-# Temperature block (dwlb format)
+# temperature block (dwlb format)
 
 if command -v sensors &> /dev/null; then
     temp=$(sensors 2>/dev/null | grep -m1 'Package id 0:\|Core 0:' | awk '{print $3}' | tr -d '+°C')
