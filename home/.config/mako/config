@@ -1,26 +1,26 @@
-# Mako notification daemon config
-# Black/Purple aesthetic with transparency
+# mako notification daemon config
+# black/purple aesthetic with transparency
 
-# Colors
+# colors
 background-color=#000000dd
 text-color=#e0e0e0
 border-color=#bd93f9
 progress-color=over #bd93f9
 
-# Position
+# position
 anchor=top-right
 margin=10
 
-# Style
+# style
 border-size=2
 border-radius=8
 padding=12
 font=InconsolataGo Nerd Font 11
 
-# Behavior
+# behavior
 default-timeout=5000
 ignore-timeout=0
 
-# Urgency colors
+# urgency colors
 [urgency=high]
 border-color=#ff5555
