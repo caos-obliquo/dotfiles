@@ -18,4 +18,5 @@ export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus
     playerctl-daemon.sh &
     ~/.local/bin/dwlb-status.sh | dwlb -status-stdin all
 ) &
+export WLR_RENDERER=gles2
 exec dwl -s 'sh -c "wawa fill ~/walls/wall3.jpg & dwlb -font \"JetBrainsMono Nerd Font:size=16\" -no-ipc -no-hidden"'
