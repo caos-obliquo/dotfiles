@@ -50,7 +50,10 @@ This means wmenu always looks like part of the bar without any runtime color fla
 
 The wmenu fork renders PNG thumbs from `[img:path]text` stdin rows (64px, 96px row height) and centers itself both axes with `-c`. Corrupt/truncated clipboard images degrade to plain text rows that remain pickable.
 
-## Keybindings worth knowing
+ ## Keybindings worth knowing
+
+Full reference: [docs/KEYBINDS.md](docs/KEYBINDS.md) (dwl, wmenu, wclipmenu,
+wlock, mako).
 
 | Key                  | Action                             |
 | -------------------- | ---------------------------------- |
