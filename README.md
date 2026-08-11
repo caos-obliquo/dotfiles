@@ -1,142 +1,133 @@
-# dotfiles
+# dotfiles — DraculaWL
 
-My daily driver config, affectionately called DraculaWL by me. HP EliteBook 645 G11 (AMD based), Arch Linux, DWL on Wayland.
+**Purpose: one keyboard-first Wayland desktop, fully declarative and
+reproducible.** Every config in this repo mirrors exactly what runs on the
+machine (HP EliteBook 645 G11, Arch Linux, dwl). The whole desktop is driven
+from the keyboard — the mouse is optional.
 
-## Stack
+Each piece of the stack is **self-documenting**: every folder has its own
+`README.md` with what it does, what's configured, and its keybinds. This
+README is the map, not the encyclopedia.
 
-| Tool              | Role                                                                             |
-| ----------------- | -------------------------------------------------------------------------------- |
-| **dwl**           | Wayland compositor (patched fork)                                                |
-| **dwlb**          | Status bar (dwl fork) - fed by `dwlb-status.sh | dwlb -status-stdin`; writes geometry + colors to `/tmp/dwlb-geometry` on every render |
-| **wmenu-caos**    | Menus (fork of wmenu-dwlb, binary stays `wmenu`) - app launcher + picker host; reads `/tmp/dwlb-geometry`, patched with `-c` centering, `-B` border, PNG thumbnail rendering (`[img:path]` rows) |
-| **wclipmenu**     | Clipboard picker - `wclipmenu` (text, Super+P) and `wclipmenu image` (thumbnails, Super+Shift+P) |
-| **kaprica**       | Clipboard history store - `kapd` watcher daemon + `kapc` CLI (search/copy/paste, file-based db) |
-| **foot**          | Terminal                                                                          |
-| **nvim**          | Editor                                                                            |
-| **tmux**          | Multiplexer                                                                       |
-| **zsh**           | Shell, with atuin for history                                                     |
-| **mako**          | Notifications                                                                     |
-| **htop**          | System monitor                                                                    |
-| **ccze**          | Log colorizer                                                                     |
-| **zathura**       | PDF viewer                                                                        |
-| **widle**         | Idle daemon - `widle -t 300 wlock` locks after 5min idle                          |
-| **wlock**         | Screen locker (ext-session-lock) - solid color rendered via wl_shm                |
-| **wawa**          | Wallpaper - swaybg replacement; `wawa fill ~/walls/wall3.jpg` (fill mode)         |
-| **pass**          | Password manager                                                                  |
+## The stack
 
-Everything uses the [Dracula](https://draculatheme.com) color palette. Where an official theme exists it's used directly; where it doesn't, the colors are matched manually in the config.
+| Tool | Role | Layer |
+|---|---|---|
+| **dwl** | Wayland compositor (patched fork: freeze fix + 7 patches) | WM |
+| **dwlb** | Status bar — geometry/colors to `/tmp/dwlb-geometry` | UI |
+| **wmenu-caos** | Menus (launcher, pickers, passmenu) | UI |
+| **wclipmenu** | Clipboard picker (text + image thumbnails) | UI |
+| **kaprica** | Clipboard history store (`kapd` daemon + `kapc` CLI) | data |
+| **mako** | Notifications | UI |
+| **wlock** | Screen locker (ext-session-lock) | security |
+| **widle** | Idle daemon — locks after 5 min idle | security |
+| **wawa** | Wallpaper (swaybg replacement) | UI |
+| **kanshi** | Auto monitor profiles on dock/undock | hardware |
+| **foot** | Terminal (Dracula, transparent) | UI |
+| **tmux** | Multiplexer (vim-grammar binds) | shell |
+| **zsh** | Shell — vi-mode, Dracula prompt, atuin history | shell |
+| **atuin** | History search (`Ctrl+Up` / vi-`k`) | shell |
+| **ccze** | Log colorizer (Dracula semantic scheme) | shell |
+| **nvim** | Editor | apps |
+| **zathura** | PDF viewer | apps |
+| **htop / btop** | System monitors | apps |
+| **pass** | Password manager (via `passmenu`) | security |
+| **playerctl** | Media control (play/pause/next/prev) | media |
+| **rescrobbled** | last.fm scrobbler (from youtui) | media |
+
+Everything is **Dracula** — official themes where they exist, hand-matched
+otherwise.
+
+## Keyboard layers (how the whole desktop responds)
+
+The keyboard is organized in **layers**, each with the same vim grammar:
+
+| Layer | Tool | `j/k/h/l` | leader |
+|---|---|---|---|
+| WM | dwl | window focus / master size | `Super` |
+| Multiplexer | tmux | pane navigation | `Ctrl+Space` |
+| Shell | zsh | vi-mode | `Esc` |
+| Editor | nvim | native vim | — |
+| Menus | wmenu | navigate matches | `Ctrl` |
+| Browser | **Vimium** (vimium-c on Waterfox) | scroll / hints / tabs | `f` hints |
+
+> 🏆 **Honor mention — Vimium.** Not in this repo (it's a browser extension,
+> not a config file), but fundamental to the keyboard-warrior setup: `j/k`
+> scroll, `f` link hints, `H/L` history, `J/K` tabs. It completes the promise
+> that *nothing on this desktop requires a mouse* — including the browser.
+> Install vimium-c on Waterfox and the loop is closed.
+
+**Complete keybind reference:** [`docs/KEYBINDS.md`](docs/KEYBINDS.md)
+
+## Repository layout
+
+```
+home/.config/<tool>/   → mirrors ~/.config; each folder self-documenting
+                        (README.md + config + keybinds inside)
+builds/<tool>/         → per-fork build configs (config.h, menu.c, …)
+                        copied into the source before `make`
+docs/                  → cross-cutting references (KEYBINDS.md)
+autorice-deploy.sh     → one-shot: deploys home/, clones + builds every fork
+start-dwl.sh           → session entry (bar, wallpaper, clipboard, idle→lock)
+```
 
 ## How the bar/launcher integration works
 
-`dwlb` (the status bar) writes to `/tmp/dwlb-geometry` on every frame:
-
-```
-<middle_x> <middle_width> <bar_height> <bg_color> <fg_color>
-```
-
-`wmenu-caos` reads this file to position and color itself. Two modes:
-
-- `-t` - positions wmenu inside the bar's title section (app launcher)
-- `-c` - centers wmenu on screen (clipboard picker, passmenu)
-
-This means wmenu always looks like part of the bar without any runtime color flags.
+`dwlb` writes `<middle_x> <middle_width> <bar_height> <bg> <fg>` to
+`/tmp/dwlb-geometry` every frame; `wmenu-caos` reads it to position and
+color itself — `-t` parks the launcher in the bar's title section, `-c`
+centers pickers on screen. wmenu always looks like part of the bar with zero
+runtime color flags.
 
 ## How the clipboard picker works
 
-`kapd` watches the Wayland clipboard and stores entries into its history db. `wclipmenu` queries it on demand via `kapc` and pipes the results into wmenu:
+`kapd` watches the clipboard → history db. `wclipmenu` queries it on demand
+via `kapc` and pipes into wmenu:
+- **Text**: `kapc search -t text/plain -L -l 100` → pick → `kapc copy -i <id>`
+- **Images**: PNGs → magick-resized 96px thumbnails → `[img:path]` rows →
+  wmenu renders them → pick → copy
 
-- **Text**: `wclipmenu` → `kapc search -t text/plain -L -l 100 | wmenu` → pick → `kapc copy -i <id>`
-- **Images**: `wclipmenu image` → `kapc search -t image/png` → magick-resized 96px thumbnails emitted as `[img:<path>]row` lines → wmenu renders them → pick → `kapc copy -i <id>`
-
-The wmenu fork renders PNG thumbs from `[img:path]text` stdin rows (64px, 96px row height) and centers itself both axes with `-c`. Corrupt/truncated clipboard images degrade to plain text rows that remain pickable.
-
- ## Keybindings worth knowing
-
-Full reference: [docs/KEYBINDS.md](docs/KEYBINDS.md) (dwl, wmenu, wclipmenu,
-wlock, mako).
-
-| Key                  | Action                             |
-| -------------------- | ---------------------------------- |
-| Super+D              | App launcher (wmenu in bar)        |
-| Super+P              | Text clipboard history (wclipmenu) |
-| Super+Shift+P        | Image clipboard history (wclipmenu image, thumbnails) |
-| Super+S              | Screenshot area                    |
-| Super+Shift+L        | Lock screen (wlock)                |
-| Ctrl+Up              | Atuin shell history search         |
-| vi `k` (normal mode) | Atuin shell history search         |
+Corrupt images degrade to plain text rows that stay pickable.
 
 ## Setup
 
-Clone the repo, then copy `home/` contents to `~/`:
+**Option A — automated (recommended):**
 
 ```bash
-cp -r home/. ~/
-chmod +x ~/.local/bin/*.sh
+./autorice-deploy.sh
 ```
 
-Then clone and build the forks. Each one expects its `config.h` (and in wmenu-caos's case, `menu.c`) to be copied from this repo before building:
+Clones every fork, copies the per-fork build configs from `builds/`, builds,
+installs, and copies `home/` → `~/`.
 
-```bash
-# dwl
-git clone <your-dwl-fork> ~/builds/dwl
-cd ~/builds/dwl
-cp ~/dotfiles/builds/dwl/config.h .
-make clean && make && sudo make install
+**Option B — manual:** copy `home/.` to `~/`, then per fork:
+clone → copy its `builds/<tool>/config.h` → `make && sudo make install`
+(exact commands for each tool live in their vendored folder READMEs).
 
-# dwlb (status bar - fork writes /tmp/dwlb-geometry itself)
-git clone <your-dwlb-fork> ~/builds/dwlb-geometry
-cd ~/builds/dwlb-geometry
-make clean && make && sudo make install
-
-# wmenu-caos (fork of wmenu-dwlb, binary stays wmenu)
-git clone <your-wmenu-caos-fork> ~/builds/wmenu-caos
-cd ~/builds/wmenu-caos
-cp ~/dotfiles/builds/wmenu-caos/config.h .
-cp ~/dotfiles/builds/wmenu-caos/menu.c .
-rm -rf build && meson setup build && ninja -C build && sudo ninja -C build install
-```
-
-# wclipmenu
-git clone <your-wclipmenu-fork> ~/builds/wclipmenu
-cd ~/builds/wclipmenu
-make clean && make && sudo make install
-
-# kaprica (clipboard history store)
-git clone <kaprica-repo> ~/builds/kaprica
-cd ~/builds/kaprica
-# build per its meson instructions, installs kapd + kapc to /usr/local/bin
-
-# wlock (screen locker)
-git clone <your-wlock-fork> ~/builds/wlock
-cd ~/builds/wlock
-make clean && make && sudo make install  # installs suid-root (4755)
-
-# wawa (wallpaper)
-git clone <your-wawa-fork> ~/builds/wawa
-cd ~/builds/wawa
-make clean && make && sudo make install
-```
-
-Start everything:
+Start the session:
 
 ```bash
 start-dwl.sh
 ```
 
-kapd (the clipboard watcher), dwlb, the status feed, the wallpaper (`wawa fill ~/walls/wall3.jpg`), and the idle→lock chain (`widle -t 300 wlock`) all start automatically from there.
+kapd, dwlb + the status feed, wawa wallpaper, kanshi (if installed), and the
+`widle -t 300 wlock` idle→lock chain all start from there.
 
 ## Dependencies
 
 ```bash
-pacman -S grim slurp wl-clipboard pamixer atuin pass \
-          foot mako htop ccze zathura zathura-pdf-mupdf widle
+pacman -S grim slurp wl-clipboard pamixer playerctl atuin pass \
+          foot mako htop ccze zathura zathura-pdf-mupdf widle kanshi
 ```
 
-wmenu-caos needs cairo, pango, wayland, xkbcommon, and the `wlr-layer-shell-unstable-v1` protocol (meson + ninja). `wclipmenu image` needs ImageMagick (`magick`) for thumbnail generation.
+wmenu-caos needs cairo/pango/wayland/xkbcommon + wlr-layer-shell protocol
+(meson+ninja). `wclipmenu image` needs ImageMagick. rescrobbled needs
+`~/.config/rescrobbled/config.toml` (gitignored — fill from
+`config.toml.example`, see its README).
 
 ## Notes
 
-- the status feed, wallpaper, and idle→lock chain are all launched from `start-dwl.sh`
-- wmenu uses `-t` for the bar-positioned launcher and `-c` for centered menus; `-B <color>` sets the 2px border, `-N`/`-n`/`-S`/`-s` set panel/selection colors (RRGGBBAA)
-- kapd watches the clipboard and writes history; `kapc search -t text/plain -L` is the query wclipmenu uses
-- widle and wlock are integrated - `widle -t 300 wlock` (in start-dwl.sh) locks after 5min idle; Super+Shift+L locks manually
+- **Secrets**: never commit credentials. `config.toml.example` files ship
+  placeholders; real files are gitignored (see `rescrobbled/README.md`).
+- PR workflow everywhere: feature branch → PR → merge; no direct pushes.
+- Per-fork patches live in the dwl repo's `patches/` (dwl-patches convention).

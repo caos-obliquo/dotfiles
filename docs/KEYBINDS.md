@@ -10,7 +10,7 @@
 | Key | Action |
 |---|---|
 | `Super+d` | `wmenu-run` (app menu) |
-| `Super+b` | `spawnorfocus` firefox — focus if running, else spawn |
+| `Super+b` | `spawnorfocus` waterfox — focus if running, else spawn |
 | `Super+Shift+Return` | `foot` terminal |
 | `Super+Shift+L` | `wlock` (screen lock) |
 | `Super+p` | `wclipmenu` (clipboard text picker) |
@@ -102,7 +102,7 @@
 | App | Rule |
 |---|---|
 | `wmenu-center` | floating, opacity 0.85 |
-| firefox | tag 9 |
+| waterfox | tag 9 |
 
 ## wmenu-caos — pickers
 
@@ -137,3 +137,19 @@ Failed attempt turns the overlay red (`failonclear = 1`).
 ## mako — notifications
 
 No keybinds configured (`home/.config/mako/config`) — click to dismiss, timeout 5s.
+
+## Browser layer — Vimium (vimium-c on Waterfox)
+
+Not a config in this repo — a browser extension that closes the keyboard
+loop. Fundamental companion.
+
+| Key | Action |
+|---|---|
+| `j` / `k` | scroll down / up |
+| `f` | link hints (type chars to follow) |
+| `H` / `L` | back / forward |
+| `J` / `K` | prev / next tab |
+| `d` / `u` | half-page down / up |
+| `x` / `X` | close tab / restore tab |
+| `/` | find in page |
+| `g` + `g` / `G` | top / bottom of page |
