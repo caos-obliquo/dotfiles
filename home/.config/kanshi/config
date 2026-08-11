@@ -1,0 +1,17 @@
+# kanshi - automatic output configuration (Wayland, autorandr-style)
+
+# Applied automatically when an output matches. Talk to dwl via the
+# wlr-output-management protocol. Requires: sudo pacman -S kanshi
+# (launch kanshi from start-dwl.sh)
+
+profile laptop {
+    output eDP-1 mode 1920x1200@60.001Hz position 0,0 scale 1
+}
+
+# External monitor (docked). Adjust the output name/mode to your hardware:
+#   wlr-randr   # list connected outputs
+# profile docked {
+#     output eDP-1 disable
+#     output "AU Optronics 0xE3AC" mode 1920x1200@60.001Hz position 0,0 scale 1
+#     output "external-monitor-name" mode 2560x1440@60Hz position 1920,0 scale 1
+# }

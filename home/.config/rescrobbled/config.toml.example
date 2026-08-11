@@ -1,0 +1,7 @@
+# copy to config.toml and fill in your own last.fm API credentials
+# (get them at https://www.last.fm/api/account/create)
+# lastfm-key = "replace-me"
+# lastfm-secret = "replace-me"
+# session-key = "replace-me"
+
+player-whitelist = ["youtui"]

@@ -1,5 +1,14 @@
 # dwl - dwm for Wayland
 
+> **caos-obliquo fork** — DraculaWL build (dwl + dwlb-geometry + wmenu-caos).
+>
+> - Keybinds: [`docs/KEYBINDS.md`](docs/KEYBINDS.md)
+> - Patch index: [`docs/PATCHES.md`](docs/PATCHES.md)
+> - Output-freeze fix writeup: [`docs/BUG-FLOAT-TILE-FREEZE.md`](docs/BUG-FLOAT-TILE-FREEZE.md)
+> - Applied patches: [`patches/`](patches/)
+
+---
+
 2025-08-16:  
 dwl IS CURRENTLY UN-MAINTAINED.  
 AT THE PRESENT TIME, I (@fauxmight) DO NOT HAVE  

@@ -187,9 +187,9 @@ alias update="source ~/.config/zsh/.zshrc"
 
 . "$HOME/.local/share/../bin/env"
 
+# API keys - keep empty in the repo; fill locally (or via your secret store)
 export OLLAMA_API_KEY=""
 export GEMINI_API_KEY=""
-
 export CEREBRAS_API_KEY=""
 
 # auto-start litellm proxy
@@ -201,10 +201,10 @@ export LIBVIRT_DEFAULT_URI="qemu:///system"
 export PATH="$HOME/.config/emacs/bin:$PATH"
 
 # opencode
-export PATH=/home/caos/.opencode/bin:$PATH
+export PATH="$HOME/.opencode/bin:$PATH"
 export SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
-export YTMAPI_COOKIE=~/.config/terraform-ytmusic/cookies.txt
+export YTMAPI_COOKIE="$HOME/.config/terraform-ytmusic/cookies.txt"
 export PATH="$HOME/.cargo/bin:$PATH"
 
 # bun completions
-[ -s "/home/caos/.bun/_bun" ] && source "/home/caos/.bun/_bun"
+[ -s "$HOME/.bun/_bun" ] && source "$HOME/.bun/_bun"
