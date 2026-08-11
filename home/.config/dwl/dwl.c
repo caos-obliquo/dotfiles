@@ -8,6 +8,7 @@
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/wait.h>
 #include <time.h>
 #include <unistd.h>
@@ -138,6 +139,7 @@ typedef struct {
 	unsigned int bw;
 	uint32_t tags;
 	int isfloating, isurgent, isfullscreen;
+	float opacity;
 	uint32_t resize; /* configure serial of a pending resize */
 } Client;
 
@@ -227,6 +229,7 @@ typedef struct {
 	const char *title;
 	uint32_t tags;
 	int isfloating;
+	float opacity;
 	int monitor;
 } Rule;
 
@@ -300,6 +303,7 @@ static void locksession(struct wl_listener *listener, void *data);
 static void mapnotify(struct wl_listener *listener, void *data);
 static void maximizenotify(struct wl_listener *listener, void *data);
 static void monocle(Monitor *m);
+static void movestack(const Arg *arg);
 static void motionabsolute(struct wl_listener *listener, void *data);
 static void motionnotify(uint32_t time, struct wlr_input_device *device, double sx,
 		double sy, double sx_unaccel, double sy_unaccel);
@@ -319,6 +323,7 @@ static void requeststartdrag(struct wl_listener *listener, void *data);
 static void requestmonstate(struct wl_listener *listener, void *data);
 static void resize(Client *c, struct wlr_box geo, int interact);
 static void run(char *startup_cmd);
+static void scenebuffersetopacity(struct wlr_scene_buffer *buffer, int sx, int sy, void *user_data);
 static void setcursor(struct wl_listener *listener, void *data);
 static void setcursorshape(struct wl_listener *listener, void *data);
 static void setfloating(Client *c, int floating);
@@ -326,10 +331,12 @@ static void setfullscreen(Client *c, int fullscreen);
 static void setlayout(const Arg *arg);
 static void setmfact(const Arg *arg);
 static void setmon(Client *c, Monitor *m, uint32_t newtags);
+static void setopacity(const Arg *arg);
 static void setpsel(struct wl_listener *listener, void *data);
 static void setsel(struct wl_listener *listener, void *data);
 static void setup(void);
 static void spawn(const Arg *arg);
+static void spawnorfocus(const Arg *arg);
 static void startdrag(struct wl_listener *listener, void *data);
 static void tag(const Arg *arg);
 static void tagmon(const Arg *arg);
@@ -347,6 +354,7 @@ static void urgent(struct wl_listener *listener, void *data);
 static void view(const Arg *arg);
 static void virtualkeyboard(struct wl_listener *listener, void *data);
 static void virtualpointer(struct wl_listener *listener, void *data);
+static void warpcursor(const Client *c);
 static Monitor *xytomon(double x, double y);
 static void xytonode(double x, double y, struct wlr_surface **psurface,
 		Client **pc, LayerSurface **pl, double *nx, double *ny);
@@ -490,6 +498,7 @@ applyrules(Client *c)
 		if ((!r->title || strstr(title, r->title))
 				&& (!r->id || strstr(appid, r->id))) {
 			c->isfloating = r->isfloating;
+			c->opacity = r->opacity;
 			newtags |= r->tags;
 			i = 0;
 			wl_list_for_each(m, &mons, link) {
@@ -541,6 +550,7 @@ arrange(Monitor *m)
 		m->lt[m->sellt]->arrange(m);
 	motionnotify(0, NULL, 0, 0, 0, 0);
 	checkidleinhibitor(NULL);
+	warpcursor(focustop(selmon));
 }
 
 void
@@ -1127,6 +1137,7 @@ createnotify(struct wl_listener *listener, void *data)
 	c = toplevel->base->data = ecalloc(1, sizeof(*c));
 	c->surface.xdg = toplevel->base;
 	c->bw = borderpx;
+	c->opacity = default_opacity;
 
 	LISTEN(&toplevel->base->surface->events.commit, &c->commit, commitnotify);
 	LISTEN(&toplevel->base->surface->events.map, &c->map, mapnotify);
@@ -1409,6 +1420,10 @@ focusclient(Client *c, int lift)
 
 	if (locked)
 		return;
+
+	/* Warp cursor to center of client if it is outside */
+	if (lift)
+		warpcursor(c);
 
 	/* Raise client in stacking order if requested */
 	if (c && lift)
@@ -1779,7 +1794,11 @@ mapnotify(struct wl_listener *listener, void *data)
 	c->geom.height += 2 * c->bw;
 
 	/* Insert this client into client lists. */
-	wl_list_insert(&clients, &c->link);
+	if (clients.prev)
+		// tile at the bottom
+		wl_list_insert(clients.prev, &c->link);
+	else
+		wl_list_insert(&clients, &c->link);
 	wl_list_insert(&fstack, &c->flink);
 
 	/* Set initial monitor, tags, floating status, and focus:
@@ -1796,6 +1815,10 @@ mapnotify(struct wl_listener *listener, void *data)
 
 unset_fullscreen:
 	m = c->mon ? c->mon : xytomon(c->geom.x, c->geom.y);
+	if (c->isfloating && !c->isfullscreen && !client_is_unmanaged(c))
+		resize(c, (struct wlr_box){.x = (m->w.width - c->geom.width) / 2 + m->w.x,
+				.y = (m->w.height - c->geom.height) / 2 + m->w.y,
+				.width = c->geom.width, .height = c->geom.height}, 0);
 	wl_list_for_each(w, &clients, link) {
 		if (w != c && w != p && w->isfullscreen && m == w->mon && (w->tags & c->tags))
 			setfullscreen(w, 0);
@@ -1836,6 +1859,48 @@ monocle(Monitor *m)
 		snprintf(m->ltsymbol, LENGTH(m->ltsymbol), "[%d]", n);
 	if ((c = focustop(m)))
 		wlr_scene_node_raise_to_top(&c->scene->node);
+}
+
+void
+movestack(const Arg *arg)
+{
+	Client *c, *sel = focustop(selmon);
+
+	if (!sel) {
+		return;
+	}
+
+	if (wl_list_length(&clients) <= 1) {
+		return;
+	}
+
+	if (arg->i > 0) {
+		wl_list_for_each(c, &sel->link, link) {
+			if (&c->link == &clients) {
+				c = wl_container_of(&clients, c, link);
+				break; /* wrap past the sentinel node */
+			}
+			if (VISIBLEON(c, selmon) || &c->link == &clients) {
+				break; /* found it */
+			}
+		}
+	} else {
+		wl_list_for_each_reverse(c, &sel->link, link) {
+			if (&c->link == &clients) {
+				c = wl_container_of(&clients, c, link);
+				break; /* wrap past the sentinel node */
+			}
+			if (VISIBLEON(c, selmon) || &c->link == &clients) {
+				break; /* found it */
+			}
+		}
+		/* backup one client */
+		c = wl_container_of(c->link.prev, c, link);
+	}
+
+	wl_list_remove(&sel->link);
+	wl_list_insert(&c->link, &sel->link);
+	arrange(selmon);
 }
 
 void
@@ -2154,23 +2219,23 @@ rendermon(struct wl_listener *listener, void *data)
 	 * generally at the output's refresh rate (e.g. 60Hz). */
 	Monitor *m = wl_container_of(listener, m, frame);
 	Client *c;
-	struct wlr_output_state pending = {0};
 	struct timespec now;
 
-	/* Render if no XDG clients have an outstanding resize and are visible on
-	 * this monitor. */
+	/* wlroots >= 0.19 tracks intermediate surface states internally (scene
+	 * damage + explicit sync), so there is no need to delay rendering until
+	 * every client acknowledges its pending resize. Doing so could leave
+	 * c->resize stuck non-zero when a background client never commits,
+	 * freezing the output until restart (dwl issue #1203). */
+	if (!wlr_scene_output_needs_frame(m->scene_output))
+		return;
+
 	wl_list_for_each(c, &clients, link) {
-		if (c->resize && !c->isfloating && client_is_rendered_on_mon(c, m) && !client_is_stopped(c))
-			goto skip;
+		wlr_scene_node_for_each_buffer(&c->scene_surface->node, scenebuffersetopacity, c);
 	}
 
 	wlr_scene_output_commit(m->scene_output, NULL);
-
-skip:
-	/* Let clients know a frame has been rendered */
 	clock_gettime(CLOCK_MONOTONIC, &now);
 	wlr_scene_output_send_frame_done(m->scene_output, &now);
-	wlr_output_state_finish(&pending);
 }
 
 void
@@ -2297,6 +2362,15 @@ run(char *startup_cmd)
 }
 
 void
+scenebuffersetopacity(struct wlr_scene_buffer *buffer, int sx, int sy, void *data)
+{
+	Client *c = data;
+	/* xdg-popups are children of Client.scene, we do not have to worry about
+	   messing with them. */
+	wlr_scene_buffer_set_opacity(buffer, c->isfullscreen ? 1 : c->opacity);
+}
+
+void
 setcursor(struct wl_listener *listener, void *data)
 {
 	/* This event is raised by the seat when a client provides a cursor image */
@@ -2364,6 +2438,7 @@ setfullscreen(Client *c, int fullscreen)
 		 * client positions are set by the user and cannot be recalculated */
 		resize(c, c->prev, 0);
 	}
+	wlr_scene_node_for_each_buffer(&c->scene_surface->node, scenebuffersetopacity, c);
 	arrange(c->mon);
 	printstatus();
 }
@@ -2414,10 +2489,29 @@ setmon(Client *c, Monitor *m, uint32_t newtags)
 		/* Make sure window actually overlaps with the monitor */
 		resize(c, c->geom, 0);
 		c->tags = newtags ? newtags : m->tagset[m->seltags]; /* assign tags of target monitor */
+		c->prev.x = (m->w.width - c->prev.width) / 2 + m->m.x;
+		c->prev.y = (m->w.height - c->prev.height) / 2 + m->m.y;
 		setfullscreen(c, c->isfullscreen); /* This will call arrange(c->mon) */
 		setfloating(c, c->isfloating);
 	}
 	focusclient(focustop(selmon), 1);
+}
+
+void
+setopacity(const Arg *arg)
+{
+	Client *sel = focustop(selmon);
+	if (!sel)
+		return;
+
+	sel->opacity += arg->f;
+	if (sel->opacity > 1.0)
+		sel->opacity = 1.0f;
+
+	if (sel->opacity < 0.1)
+		sel->opacity = 0.1f;
+
+	wlr_scene_node_for_each_buffer(&sel->scene_surface->node, scenebuffersetopacity, sel);
 }
 
 void
@@ -2675,6 +2769,34 @@ spawn(const Arg *arg)
 		execvp(((char **)arg->v)[0], (char **)arg->v);
 		die("dwl: execvp %s failed:", ((char **)arg->v)[0]);
 	}
+}
+
+void
+spawnorfocus(const Arg *arg)
+{
+	char *needle;
+	Client *c;
+	int i = 0;
+
+	/* arg->v layout: { command, NULL, match-string-or-NULL }.
+	 * Match string selects an existing client by app_id/title substring;
+	 * NULL falls back to the command name. */
+	while (((char **)arg->v)[i++]);
+	needle = ((char **)arg->v)[i + 1] ? ((char **)arg->v)[i + 1] : ((char **)arg->v)[0];
+
+	wl_list_for_each(c, &clients, link)
+		if (strstr(client_get_title(c), needle)
+				|| strstr(client_get_appid(c), needle)) {
+			selmon = c->mon;
+			if (!(c->tags & selmon->tagset[selmon->seltags]))
+				selmon->tagset[selmon->seltags] = c->tags;
+
+			focusclient(c, 1);
+			arrange(selmon);
+			return;
+		}
+
+	spawn(arg);
 }
 
 void
@@ -3004,6 +3126,25 @@ virtualpointer(struct wl_listener *listener, void *data)
 		wlr_cursor_map_input_to_output(cursor, device, event->suggested_output);
 }
 
+void
+warpcursor(const Client *c)
+{
+	if (cursor_mode != CurNormal)
+		return;
+
+	if (!c && selmon)
+		wlr_cursor_warp_closest(cursor, NULL,
+				selmon->w.x + selmon->w.width / 2.0,
+				selmon->w.y + selmon->w.height / 2.0);
+	else if (c && (cursor->x < c->geom.x ||
+			cursor->x > c->geom.x + c->geom.width ||
+			cursor->y < c->geom.y ||
+			cursor->y > c->geom.y + c->geom.height))
+		wlr_cursor_warp_closest(cursor, NULL,
+				c->geom.x + c->geom.width / 2.0,
+				c->geom.y + c->geom.height / 2.0);
+}
+
 Monitor *
 xytomon(double x, double y)
 {
@@ -3131,6 +3272,7 @@ createnotifyx11(struct wl_listener *listener, void *data)
 	c->surface.xwayland = xsurface;
 	c->type = X11;
 	c->bw = client_is_unmanaged(c) ? 0 : borderpx;
+	c->opacity = default_opacity;
 
 	/* Listen to the various events it can emit */
 	LISTEN(&xsurface->events.associate, &c->associate, associatex11);

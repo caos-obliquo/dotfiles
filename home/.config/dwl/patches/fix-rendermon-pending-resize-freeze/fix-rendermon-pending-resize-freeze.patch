@@ -1,0 +1,39 @@
+diff --git a/dwl.c b/dwl.c
+index 20d0ce0..8219a20 100644
+--- a/dwl.c
++++ b/dwl.c
+@@ -2160,25 +2160,23 @@ rendermon(struct wl_listener *listener, void *data)
+ 	 * generally at the output's refresh rate (e.g. 60Hz). */
+ 	Monitor *m = wl_container_of(listener, m, frame);
+ 	Client *c;
+-	struct wlr_output_state pending = {0};
+ 	struct timespec now;
+ 
+-	/* Render if no XDG clients have an outstanding resize and are visible on
+-	 * this monitor. */
+-	wl_list_for_each(c, &clients, link) {
+-        wlr_scene_node_for_each_buffer(&c->scene_surface->node, scenebuffersetopacity, c);
++	/* wlroots >= 0.19 tracks intermediate surface states internally (scene
++	 * damage + explicit sync), so there is no need to delay rendering until
++	 * every client acknowledges its pending resize. Doing so could leave
++	 * c->resize stuck non-zero when a background client never commits,
++	 * freezing the output until restart (dwl issue #1203). */
++	if (!wlr_scene_output_needs_frame(m->scene_output))
++		return;
+ 
+-		if (c->resize && !c->isfloating && client_is_rendered_on_mon(c, m) && !client_is_stopped(c))
+-			goto skip;
++	wl_list_for_each(c, &clients, link) {
++		wlr_scene_node_for_each_buffer(&c->scene_surface->node, scenebuffersetopacity, c);
+ 	}
+ 
+ 	wlr_scene_output_commit(m->scene_output, NULL);
+-
+-skip:
+-	/* Let clients know a frame has been rendered */
+ 	clock_gettime(CLOCK_MONOTONIC, &now);
+ 	wlr_scene_output_send_frame_done(m->scene_output, &now);
+-	wlr_output_state_finish(&pending);
+ }
+ 
+ void
