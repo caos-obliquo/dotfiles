@@ -11,7 +11,8 @@ Applied: in-tree (see `mapnotify()` + `setmon()` in dwl.c)
 
 - **On map** (`mapnotify`): floating, non-fullscreen, managed clients are
   resized to the center of `c->mon->w` (work area). Unmanaged surfaces
-  (menus, tooltips, dropdowns) are excluded — they keep their own position.
+  (menus, tooltips, dropdowns) and parented sub-windows (dialogs that should
+  stay near their parent) are excluded — they keep their own position.
 - **On monitor assignment** (`setmon`, upstream hunk): `c->prev` (the
   fullscreen-restore geometry) is centered, so leaving fullscreen returns the
   window to center rather than its pre-fullscreen spot.
@@ -21,7 +22,8 @@ Applied: in-tree (see `mapnotify()` + `setmon()` in dwl.c)
 Upstream's 2026-01-15 patch (`48110f0`) only adds the `setmon` hunk — it
 centers the *restore position*, not the initial spawn. This fork additionally
 centers on map so the patch actually does what its README promises ("center
-floating windows"). The `setmon` hunk is kept verbatim.
+floating windows"). The `setmon` hunk is kept verbatim, with a
+`!client_get_parent(c)` guard added to the map path.
 
 ## Config
 

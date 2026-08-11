@@ -11,16 +11,16 @@ Applied: in-tree (see `warpcursor()` in dwl.c)
 ## Behavior
 
 - `focusclient()` with `lift` → cursor warps into the focused client's center.
-- `arrange()` → warps to the focused client (or `selmon` center if none), but
-  only when the cursor is outside the target rect, so pointer-driven layouts
-  are not yanked around.
+- `arrange()` → warps to the focused client, but only when the cursor is
+  outside the target rect, so pointer-driven layouts are not yanked around.
 - Complements `sloppyfocus = 1`: keyboard focus and pointer position always
   agree.
 
 ## Deviations from upstream patch
 
 - Brace style normalized to dwl's Allman convention (upstream used K&R).
-- No functional changes.
+- Dropped the `!c` branch (warp to `selmon` center): no cursor teleport on
+  empty tags — warping only happens with a focused client.
 
 ## Config
 

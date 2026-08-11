@@ -8,6 +8,8 @@ Source of truth: `config.h`. Layout: **ABNT2 (Brazilian)**, `MODKEY` = Super.
 |---|---|
 | `Super+d` | `wmenu-run` (app menu) |
 | `Super+b` | `spawnorfocus` firefox — focus if running, else spawn |
+| `Super+g` | `passmenu` (password store; requires passmenu) |
+| `Super+Shift+D` | `makoctl dismiss` — dismiss notification |
 | `Super+Shift+Return` | `foot` terminal |
 | `Super+Shift+L` | `wlock` (screen lock) |
 | `Super+p` | `wclipmenu` (clipboard text picker) |
@@ -114,3 +116,8 @@ Source of truth: `config.h`. Layout: **ABNT2 (Brazilian)**, `MODKEY` = Super.
 | `[]=` | tile (default, `mfact 0.55`, `nmaster 1`) |
 | `><>` | floating |
 | `[M]` | monocle |
+
+## Keyboard (layout)
+
+ABNT2 Brazilian. `CapsLock` acts as **Escape** (`xkb_rules.options =
+"caps:escape"`) — remap your muscle memory accordingly.

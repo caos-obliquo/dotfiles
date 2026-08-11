@@ -1794,11 +1794,8 @@ mapnotify(struct wl_listener *listener, void *data)
 	c->geom.height += 2 * c->bw;
 
 	/* Insert this client into client lists. */
-	if (clients.prev)
-		// tile at the bottom
-		wl_list_insert(clients.prev, &c->link);
-	else
-		wl_list_insert(&clients, &c->link);
+	/* tile at the bottom: insert before the list's last element */
+	wl_list_insert(clients.prev, &c->link);
 	wl_list_insert(&fstack, &c->flink);
 
 	/* Set initial monitor, tags, floating status, and focus:
@@ -1815,7 +1812,8 @@ mapnotify(struct wl_listener *listener, void *data)
 
 unset_fullscreen:
 	m = c->mon ? c->mon : xytomon(c->geom.x, c->geom.y);
-	if (c->isfloating && !c->isfullscreen && !client_is_unmanaged(c))
+	if (c->isfloating && !c->isfullscreen && !client_is_unmanaged(c)
+			&& !client_get_parent(c))
 		resize(c, (struct wlr_box){.x = (m->w.width - c->geom.width) / 2 + m->w.x,
 				.y = (m->w.height - c->geom.height) / 2 + m->w.y,
 				.width = c->geom.width, .height = c->geom.height}, 0);
@@ -1866,13 +1864,8 @@ movestack(const Arg *arg)
 {
 	Client *c, *sel = focustop(selmon);
 
-	if (!sel) {
+	if (!sel || wl_list_length(&clients) <= 1)
 		return;
-	}
-
-	if (wl_list_length(&clients) <= 1) {
-		return;
-	}
 
 	if (arg->i > 0) {
 		wl_list_for_each(c, &sel->link, link) {
@@ -1880,9 +1873,8 @@ movestack(const Arg *arg)
 				c = wl_container_of(&clients, c, link);
 				break; /* wrap past the sentinel node */
 			}
-			if (VISIBLEON(c, selmon) || &c->link == &clients) {
-				break; /* found it */
-			}
+			if (VISIBLEON(c, selmon))
+				break;
 		}
 	} else {
 		wl_list_for_each_reverse(c, &sel->link, link) {
@@ -1890,9 +1882,8 @@ movestack(const Arg *arg)
 				c = wl_container_of(&clients, c, link);
 				break; /* wrap past the sentinel node */
 			}
-			if (VISIBLEON(c, selmon) || &c->link == &clients) {
-				break; /* found it */
-			}
+			if (VISIBLEON(c, selmon))
+				break;
 		}
 		/* backup one client */
 		c = wl_container_of(c->link.prev, c, link);
@@ -2776,13 +2767,12 @@ spawnorfocus(const Arg *arg)
 {
 	char *needle;
 	Client *c;
-	int i = 0;
 
-	/* arg->v layout: { command, NULL, match-string-or-NULL }.
+	/* arg->v layout: { command, match-string-or-NULL, NULL }.
 	 * Match string selects an existing client by app_id/title substring;
-	 * NULL falls back to the command name. */
-	while (((char **)arg->v)[i++]);
-	needle = ((char **)arg->v)[i + 1] ? ((char **)arg->v)[i + 1] : ((char **)arg->v)[0];
+	 * NULL falls back to the command name. v[1] is always readable since
+	 * argv is NULL-terminated. */
+	needle = ((char **)arg->v)[1] ? ((char **)arg->v)[1] : ((char **)arg->v)[0];
 
 	wl_list_for_each(c, &clients, link)
 		if (strstr(client_get_title(c), needle)
@@ -3129,17 +3119,13 @@ virtualpointer(struct wl_listener *listener, void *data)
 void
 warpcursor(const Client *c)
 {
-	if (cursor_mode != CurNormal)
+	if (cursor_mode != CurNormal || !c)
 		return;
 
-	if (!c && selmon)
-		wlr_cursor_warp_closest(cursor, NULL,
-				selmon->w.x + selmon->w.width / 2.0,
-				selmon->w.y + selmon->w.height / 2.0);
-	else if (c && (cursor->x < c->geom.x ||
+	if (cursor->x < c->geom.x ||
 			cursor->x > c->geom.x + c->geom.width ||
 			cursor->y < c->geom.y ||
-			cursor->y > c->geom.y + c->geom.height))
+			cursor->y > c->geom.y + c->geom.height)
 		wlr_cursor_warp_closest(cursor, NULL,
 				c->geom.x + c->geom.width / 2.0,
 				c->geom.y + c->geom.height / 2.0);

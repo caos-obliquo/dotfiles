@@ -9,29 +9,37 @@ Source: [dwl-patches spawnorfocus](https://codeberg.org/dwl/dwl-patches/src/bran
 Author: GravityShark, Ben Collerson, clicseo, wochap, Louis-Michel Raynauld
 Applied: in-tree (see `spawnorfocus()` in dwl.c)
 
-## arg->v convention (important)
+## arg->v convention
 
-Commands bound to `spawnorfocus` must have **3 elements**:
+Commands bound to `spawnorfocus`:
 
 ```c
-{ "firefox", NULL, "firefox" }  /* cmd, NULL, match-substring */
+{ "firefox", "firefox", NULL }  /* cmd, needle, terminator */
 ```
 
-- 3rd element = substring matched against `app_id`/`title` (`strstr`).
-- If 3rd element is `NULL`, the command name (1st element) is used as the
+- 2nd element = substring matched against `app_id`/`title` (`strstr`).
+- If 2nd element is `NULL`, the command name (1st element) is used as the
   needle, e.g. `{ "foot", NULL, NULL }`.
-- The matcher loop counts to the first `NULL`, so the 3rd slot is required —
-  a 2-element array reads past the end (upstream patch quirk, kept as-is).
+- `v[1]` is always readable — argv is NULL-terminated, so no out-of-bounds
+  read (upstream's `{cmd, NULL, needle}` layout read `v[2]` past short
+  arrays; fixed in-tree, see "Deviations").
 
 ## Config (this fork)
 
 ```c
-static const char *browsercmd[] = { "firefox", NULL, "firefox" };
+static const char *browsercmd[] = { "firefox", "firefox", NULL };
 { MODKEY, XKB_KEY_b, spawnorfocus, { .v = browsercmd } },
 ```
 
 `config.h` and `config.def.h` both updated. Terminal (`Super+Shift+Return`)
 stays a plain `spawn` — new terminals should always open, not re-focus.
+
+## Deviations from upstream
+
+- argv layout is `{cmd, needle, NULL}` (upstream: `{cmd, NULL, needle}`).
+  Same semantics, no OOB read on 2-element arrays.
+- Redundant `selmon = c->mon` kept only for the tagset check before
+  `focusclient()` (which sets `selmon` itself).
 
 ## Behavior details
 
