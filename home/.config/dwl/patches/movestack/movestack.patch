@@ -1,0 +1,66 @@
+diff --git a/dwl.c b/dwl.c
+--- a/dwl.c
++++ b/dwl.c
+@@ -300,6 +303,7 @@ static void locksession(struct wl_listener *listener, void *data);
+ static void mapnotify(struct wl_listener *listener, void *data);
+ static void maximizenotify(struct wl_listener *listener, void *data);
+ static void monocle(Monitor *m);
++static void movestack(const Arg *arg);
+ static void motionabsolute(struct wl_listener *listener, void *data);
+ static void motionnotify(uint32_t time, struct wlr_input_device *device, double sx,
+ 		double sy, double sx_unaccel, double sy_unaccel);
+@@ -1838,6 +1859,41 @@ monocle(Monitor *m)
+ 		wlr_scene_node_raise_to_top(&c->scene->node);
+ }
+ 
++void
++movestack(const Arg *arg)
++{
++	Client *c, *sel = focustop(selmon);
++
++	if (!sel || wl_list_length(&clients) <= 1)
++		return;
++
++	if (arg->i > 0) {
++		wl_list_for_each(c, &sel->link, link) {
++			if (&c->link == &clients) {
++				c = wl_container_of(&clients, c, link);
++				break; /* wrap past the sentinel node */
++			}
++			if (VISIBLEON(c, selmon))
++				break;
++		}
++	} else {
++		wl_list_for_each_reverse(c, &sel->link, link) {
++			if (&c->link == &clients) {
++				c = wl_container_of(&clients, c, link);
++				break; /* wrap past the sentinel node */
++			}
++			if (VISIBLEON(c, selmon))
++				break;
++		}
++		/* backup one client */
++		c = wl_container_of(c->link.prev, c, link);
++	}
++
++	wl_list_remove(&sel->link);
++	wl_list_insert(&c->link, &sel->link);
++	arrange(selmon);
++}
++
+ void
+ motionabsolute(struct wl_listener *listener, void *data)
+ {
+diff --git a/config.def.h b/config.def.h
+index 86148ad..a52b622 100644
+--- a/config.def.h
++++ b/config.def.h
+@@ -136,6 +136,8 @@ static const Key keys[] = {
+   /* window navigation - same monitor */
+   { MODKEY, XKB_KEY_j, focusstack, { .i = +1 } }, /* next window */
+   { MODKEY, XKB_KEY_k, focusstack, { .i = -1 } }, /* prev window */
++  { MODKEY | WLR_MODIFIER_SHIFT, XKB_KEY_j, movestack, { .i = +1 } }, /* move window down stack */
++  { MODKEY | WLR_MODIFIER_SHIFT, XKB_KEY_k, movestack, { .i = -1 } }, /* move window up stack */
+   { MODKEY, XKB_KEY_Return, zoom, { 0 } },        /* promote to master */
+ 
+   /* master area control */
