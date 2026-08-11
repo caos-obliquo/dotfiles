@@ -14,6 +14,7 @@ export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus
     systemctl --user restart xdg-desktop-portal xdg-desktop-portal-wlr
     mako &
     kapd &
+    kanshi &
     widle -t 300 wlock &
     playerctl-daemon.sh &
     ~/.local/bin/dwlb-status.sh | dwlb -status-stdin all
