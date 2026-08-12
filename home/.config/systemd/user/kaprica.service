@@ -7,6 +7,7 @@ Type=exec
 ExecStart=/home/caos/.local/bin/kapd
 Restart=on-failure
 RestartSec=5s
+UMask=0077
 
 [Install]
 WantedBy=graphical-session.target
