@@ -334,6 +334,58 @@ build_wmenu() {
     success "wmenu-caos installed"
 }
 
+# build kaprica (clipboard history daemon) + install user service
+
+build_kaprica() {
+    section "Building kaprica"
+
+    KAPRICA_REPO="https://github.com/caos-obliquo/kaprica.git"
+    if [ -d "$BUILDS_DIR/kaprica" ]; then
+        log "kaprica exists, updating..."
+        git -C "$BUILDS_DIR/kaprica" pull || true
+    else
+        git clone "$KAPRICA_REPO" "$BUILDS_DIR/kaprica"
+    fi
+
+    cd "$BUILDS_DIR/kaprica"
+    rm -rf build
+    meson setup build -Dprefix="$HOME/.local" -Dsystemd=disabled
+    meson compile -C build
+    meson install -C build
+
+    # user service unit ships via dotfiles; make sure it's live + enabled
+    mkdir -p "$HOME/.config/systemd/user"
+    cp "$DOTFILES_DIR/home/.config/systemd/user/kaprica.service" "$HOME/.config/systemd/user/" 2>/dev/null || true
+    systemctl --user daemon-reload
+    systemctl --user enable --now kaprica.service 2>/dev/null || warn "kaprica service enable failed (needs running graphical session)"
+
+    success "kaprica installed + service enabled"
+}
+
+# build wclipmenu (clipboard picker on top of kaprica)
+
+build_wclipmenu() {
+    section "Building wclipmenu"
+
+    WCLIPMENU_REPO="https://github.com/caos-obliquo/wclipmenu.git"
+    if [ -d "$BUILDS_DIR/wclipmenu" ]; then
+        log "wclipmenu exists, updating..."
+        git -C "$BUILDS_DIR/wclipmenu" pull || true
+    else
+        git clone "$WCLIPMENU_REPO" "$BUILDS_DIR/wclipmenu"
+    fi
+
+    cd "$BUILDS_DIR/wclipmenu"
+    # point kapc to the local install (not /usr/local/bin)
+    sed -i 's|#define KAPC_PATH "/usr/local/bin/kapc"|#define KAPC_PATH "$HOME/.local/bin/kapc"|' src/wclipmenu.h 2>/dev/null || true
+    sed -i "s|\$HOME|$HOME|" src/wclipmenu.h
+    make
+    mkdir -p "$HOME/.local/bin"
+    make PREFIX="$HOME/.local" install
+
+    success "wclipmenu installed"
+}
+
 # zsh plugins (not in pacman)
 
 setup_zsh_plugins() {
@@ -510,6 +562,8 @@ BANNER
     build_dwl
     build_dwlb
     build_wmenu
+    build_kaprica
+    build_wclipmenu
     setup_zsh_plugins
     setup_tmux_plugins
     setup_walls

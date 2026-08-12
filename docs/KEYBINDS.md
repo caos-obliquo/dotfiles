@@ -79,6 +79,9 @@
 | `XF86MonBrightnessDown/Up` | `brightnessctl` -5% / +5% |
 | `XF86AudioMute` | `wpctl` mute toggle |
 | `XF86AudioLowerVolume/RaiseVolume` | `wpctl` 5%- / 5%+ |
+| `XF86AudioPlay` | `playerctl -p youtui` play/pause |
+| `XF86AudioNext` | `playerctl -p youtui` next |
+| `XF86AudioPrev` | `playerctl -p youtui` previous |
 
 ### Screenshots
 
