@@ -107,7 +107,7 @@ install_base_system() {
         lf \
         pass \
         atuin \
-        ccze || error "Failed to install base packages"
+        || error "Failed to install base packages"
 
     success "Base packages installed"
 }
@@ -386,6 +386,31 @@ build_wclipmenu() {
     success "wclipmenu installed"
 }
 
+# build ccze from source (cornet/ccze) - not in official repos
+
+build_ccze() {
+    section "Building ccze"
+
+    sudo pacman -S --needed --noconfirm ncurses pcre autoconf automake
+
+    mkdir -p "$BUILDS_DIR"
+    cd "$BUILDS_DIR"
+
+    if [ -d "ccze" ]; then
+        git -C ccze pull || true
+    else
+        git clone https://github.com/cornet/ccze.git
+    fi
+
+    cd ccze
+    autoreconf -fi
+    ./configure --prefix="$HOME/.local"
+    make
+    make install
+
+    success "ccze installed"
+}
+
 # zsh plugins (not in pacman)
 
 setup_zsh_plugins() {
@@ -564,6 +589,7 @@ BANNER
     build_wmenu
     build_kaprica
     build_wclipmenu
+    build_ccze
     setup_zsh_plugins
     setup_tmux_plugins
     setup_walls
