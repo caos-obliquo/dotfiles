@@ -120,4 +120,4 @@ Source of truth: `config.h`. Layout: **ABNT2 (Brazilian)**, `MODKEY` = Super.
 ## Keyboard (layout)
 
 ABNT2 Brazilian. `CapsLock` acts as **Escape** (`xkb_rules.options =
-"caps:escape"`) — remap your muscle memory accordingly.
+"caps:swapescape"`) — remap your muscle memory accordingly.
