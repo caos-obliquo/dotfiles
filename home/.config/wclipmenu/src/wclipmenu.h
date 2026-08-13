@@ -21,7 +21,7 @@
 
 #include <stddef.h> /* size_t */
 
-#define KAPC_PATH "/usr/local/bin/kapc"
+#define KAPC_PATH "/home/caos/.local/bin/kapc"
 #define DEFAULT_LIMIT 100
 #define WMENU_LINES 15
 #define WMENU_IMAGE_LINES 5

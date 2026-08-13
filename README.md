@@ -33,7 +33,7 @@ README is the map, not the encyclopedia.
 | **htop / btop** | System monitors | apps |
 | **pass** | Password manager (via `passmenu`) | security |
 | **playerctl** | Media control (play/pause/next/prev) | media |
-| **rescrobbled** | last.fm scrobbler (from youtui) | media |
+| **youtui** | YT Music TUI — native Last.fm scrobbler (Genius/MusicBrainz/ListenBrainz metadata) | media |
 
 Everything is **Dracula** — official themes where they exist, hand-matched
 otherwise.
@@ -121,13 +121,18 @@ pacman -S grim slurp wl-clipboard pamixer playerctl atuin pass \
 ```
 
 wmenu-caos needs cairo/pango/wayland/xkbcommon + wlr-layer-shell protocol
-(meson+ninja). `wclipmenu image` needs ImageMagick. rescrobbled needs
-`~/.config/rescrobbled/config.toml` (gitignored — fill from
-`config.toml.example`, see its README).
+(meson+ninja). `wclipmenu image` needs ImageMagick.<br>
+**Secrets**: Last.fm/Genius/MusicBrainz/ListenBrainz keys live in
+`~/.config/youtui/config.toml` — never commit (gitignored).
 
 ## Notes
 
 - **Secrets**: never commit credentials. `config.toml.example` files ship
   placeholders; real files are gitignored (see `rescrobbled/README.md`).
+- **youtui fork build** (`~/builds/youtui`): rustup installed with
+  `--no-modify-path` — run `. "$HOME/.cargo/env"` before `cargo build`.
+  `~/.local/bin/youtui` symlinks `target/release/youtui` (upstream 1.0.9
+  kept as `~/.local/bin/youtui-1.0.9.bak`). Keys live in
+  `~/.config/youtui/config.toml` (gitignored).
 - PR workflow everywhere: feature branch → PR → merge; no direct pushes.
 - Per-fork patches live in the dwl repo's `patches/` (dwl-patches convention).

@@ -245,6 +245,8 @@ static void prepare_read(struct wl_display *display)
 
 int main(int argc, char *argv[])
 {
+    int exit_code = EXIT_SUCCESS;
+
     parse_options(argc, argv);
 
     char *config_file = find_config_file();
@@ -409,6 +411,7 @@ int main(int argc, char *argv[])
         if (wl_display_read_events(clip->display) == -1)
         {
             perror("wl_display_read_events");
+            exit_code = EXIT_FAILURE;
             break;
         }
     }
@@ -422,4 +425,6 @@ int main(int argc, char *argv[])
     close(watch_signals);
     close(clean_up_entries);
     clip_destroy(clip);
+
+    return exit_code;
 }

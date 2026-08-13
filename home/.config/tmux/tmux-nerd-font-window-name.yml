@@ -1,0 +1,8 @@
+config:
+  fallback-icon: "?"
+  show-name: true
+
+icons:
+  youtui: "󰓃"
+  pi: "π"
+  opencode: "󰚩"

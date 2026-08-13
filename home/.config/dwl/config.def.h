@@ -21,10 +21,11 @@ static const float default_opacity = 1.0f;
 
 static int log_level = WLR_ERROR;
 
-/* window rules - gimp floating, firefox on tag 9 */
+/* window rules - gimp floating, waterfox on tag 9 */
 static const Rule rules[] = {
+  { "wmenu-center", NULL, 0, 1, 0.85f, -1 },
   { "Gimp_EXAMPLE", NULL, 0, 1, 1.0f, -1 },
-  { "firefox_EXAMPLE", NULL, 1 << 8, 0, 1.0f, -1 },
+  { "waterfox_EXAMPLE", NULL, 1 << 8, 0, 1.0f, -1 },
 };
 
 /* layouts: tile, floating, monocle */
@@ -48,7 +49,7 @@ static const struct xkb_rule_names xkb_rules = {
   .model = "abnt2",
   .layout = "br",
   .variant = NULL,
-  .options = NULL,
+  .options = "caps:escape", /* keyboard-warrior: CapsLock is Escape */
 };
 
 /* trackpad */
@@ -95,6 +96,9 @@ static const char *const autostart[]
 /* commands */
 static const char *termcmd[] = { "foot", NULL };
 static const char *menucmd[] = { "wmenu-run", "-t", NULL };
+static const char *browsercmd[] = { "waterfox", "Waterfox", NULL };
+static const char *dismisscmd[] = { "makoctl", "dismiss", NULL };
+static const char *passcmd[] = { "passmenu", NULL }; /* requires passmenu (pass) */
 static const char *lockcmd[] = { "wlock", NULL };
 static const char *clipcmd[] = { "wclipmenu", NULL };
 static const char *clipimgcmd[] = { "wclipmenu", "image", NULL };
@@ -108,6 +112,9 @@ static const char *volumedown[]
     = { "wpctl", "set-volume", "@DEFAULT_AUDIO_SINK@", "5%-", NULL };
 static const char *volumeup[]
     = { "wpctl", "set-volume", "@DEFAULT_AUDIO_SINK@", "5%+", NULL };
+static const char *audioplay[] = { "playerctl", "-p", "youtui", "play-pause", NULL };
+static const char *audionext[] = { "playerctl", "-p", "youtui", "next", NULL };
+static const char *audioprev[] = { "playerctl", "-p", "youtui", "previous", NULL };
 
 /* screenshots */
 static const char *screenshot_full[] = { "dwl-screenshot", "full", NULL };
@@ -125,14 +132,19 @@ static const Key keys[] = {
 
   /* launchers */
   { MODKEY, XKB_KEY_d, spawn, { .v = menucmd } },
+  { MODKEY, XKB_KEY_b, spawnorfocus, { .v = browsercmd } },
+  { MODKEY | WLR_MODIFIER_SHIFT, XKB_KEY_D, spawn, { .v = dismisscmd } },
+  { MODKEY, XKB_KEY_g, spawn, { .v = passcmd } },
   { MODKEY | WLR_MODIFIER_SHIFT, XKB_KEY_Return, spawn, { .v = termcmd } },
   { MODKEY | WLR_MODIFIER_SHIFT, XKB_KEY_L, spawn, { .v = lockcmd } },
-  { MODKEY, XKB_KEY_p, spawn, { .v = clipcmd } },
-  { MODKEY | WLR_MODIFIER_SHIFT, XKB_KEY_P, spawn, { .v = clipimgcmd } },
+	{ MODKEY, XKB_KEY_p, spawn, { .v = clipcmd } },
+	{ MODKEY | WLR_MODIFIER_SHIFT, XKB_KEY_P, spawn, { .v = clipimgcmd } },
 
   /* window navigation - same monitor */
   { MODKEY, XKB_KEY_j, focusstack, { .i = +1 } }, /* next window */
   { MODKEY, XKB_KEY_k, focusstack, { .i = -1 } }, /* prev window */
+  { MODKEY | WLR_MODIFIER_SHIFT, XKB_KEY_j, movestack, { .i = +1 } }, /* move window down stack */
+  { MODKEY | WLR_MODIFIER_SHIFT, XKB_KEY_k, movestack, { .i = -1 } }, /* move window up stack */
   { MODKEY, XKB_KEY_Return, zoom, { 0 } },        /* promote to master */
 
   /* master area control */
@@ -197,6 +209,11 @@ static const Key keys[] = {
   { 0, XKB_KEY_XF86AudioMute, spawn, { .v = volumemute } },
   { 0, XKB_KEY_XF86AudioLowerVolume, spawn, { .v = volumedown } },
   { 0, XKB_KEY_XF86AudioRaiseVolume, spawn, { .v = volumeup } },
+
+  /* media control - youtui */
+  { 0, XKB_KEY_XF86AudioPlay, spawn, { .v = audioplay } },
+  { 0, XKB_KEY_XF86AudioNext, spawn, { .v = audionext } },
+  { 0, XKB_KEY_XF86AudioPrev, spawn, { .v = audioprev } },
 
   /* screenshots */
   { MODKEY, XKB_KEY_s, spawn, { .v = screenshot_area } },
