@@ -70,6 +70,10 @@ CPU_COLOR="#f1fa8c"
 MEM_ICON="󰍛"
 MEM_COLOR="#bd93f9"
 
+# ZSH icon
+ZSH_ICON="󰌓"
+ZSH_COLOR="#8be9fd"
+
 # Build output parts
 PARTS=()
 
@@ -78,6 +82,7 @@ PARTS=()
 [ -n "$VOL_ICON" ] && PARTS+=("#[fg=$VOL_COLOR]$VOL_ICON ${VOL_PCT}%")
 PARTS+=("#[fg=$CPU_COLOR]$CPU_ICON")
 PARTS+=("#[fg=$MEM_COLOR]$MEM_ICON")
+PARTS+=("#[fg=$ZSH_COLOR]$ZSH_ICON")
 
 # Join with separator
 SEP="#[fg=#6272a4]  "
