@@ -70,15 +70,14 @@ CPU_COLOR="#f1fa8c"
 MEM_ICON="󰍛"
 MEM_COLOR="#bd93f9"
 
-# ZSH icon
-ZSH_ICON="󰌓"
-ZSH_COLOR="#8be9fd"
-
-# Build output parts (icons removed — plain text only)
+# Build output parts
 PARTS=()
 
-[ -n "$BAT_PCT" ] && PARTS+=("#[fg=$BAT_COLOR]BAT $BAT_PCT%")
-[ -n "$VOL_PCT" ] && PARTS+=("#[fg=$VOL_COLOR]VOL $VOL_PCT%")
+[ -n "$BAT_ICON" ] && PARTS+=("#[fg=$BAT_COLOR]$BAT_ICON $BAT_PCT%")
+[ -n "$NET_ICON" ] && PARTS+=("#[fg=$NET_COLOR]$NET_ICON")
+[ -n "$VOL_ICON" ] && PARTS+=("#[fg=$VOL_COLOR]$VOL_ICON ${VOL_PCT}%")
+PARTS+=("#[fg=$CPU_COLOR]$CPU_ICON")
+PARTS+=("#[fg=$MEM_COLOR]$MEM_ICON")
 
 # Join with separator
 SEP="#[fg=#6272a4]  "
