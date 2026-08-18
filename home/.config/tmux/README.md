@@ -73,13 +73,11 @@ Text format: `<icon> artist - title`.
 
 - `tmux.conf` — prefix, keybinds, status-bar layout, nerd-font window icons, plugins, history 50k
 - `tmux-nerd-font-window-name.yml` — icon map + options for the window-name plugin
-- `home/.local/bin/tmux-music` — now-playing status-right script (play/pause/stop icons, marquee)
-- `home/.local/bin/tmux-icons` — text-only system icons (BAT%/VOL%), currently unused on the bar
+- `~/.local/bin/tmux-music` — now-playing status-right script (play/pause/stop icons, marquee)
+- `~/.local/bin/tmux-icons` — text-only system icons (BAT%/VOL%), currently unused on the bar
 
 ## Notes
 
-- Nerd-font icons: arch `󰣇`, window `󰕰`
-- Music status reads `/tmp/youtui-state` (written by `playerctl-daemon.sh`, player `youtui`)
 - Default terminal `tmux-256color`; base index 1 (not 0); plugins via tpm
 - Versioned as `tmux-v1.0.0` — see the GitHub release notes for the full change set
 
