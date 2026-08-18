@@ -1,67 +1,47 @@
-# Recommended dwl patches
+# dwl patches — applied state
 
-Curated from the official [dwl-patches](https://codeberg.org/dwl/dwl-patches)
-repository, matching this setup: `foot` terminal, `wmenu`/`wclipmenu`, `dwlb`
-bar (no-ipc), `wlock`, Dracula theme, XWayland enabled, trackpad.
+Applied and committed in the caos-obliquo/dwl fork. Patches live in the fork's
+`patches/` directory (dwl-patches convention).
 
-Apply with: `patch -p1 < patches/<name>.patch` (from the repo root), then
-`make`.
+## Applied patches
 
-## Fixes / quality of life (recommended)
-
-| Patch | Why |
+| Patch | Notes |
 |---|---|
+| `bar` (sewn) | Native dwl bar (30px, top). Draws tags, layout symbol, title, status, tray. |
+| `barcolors` | Bar colors follow `SchemeNorm`/`SchemeSel` from config. |
+| `appicons` | Appicon rules in `config.h` — Nerd Font glyphs replace tag labels (waterfox 󰈹, chromium 󰊯, steam , youtui 󰑈). |
+| `systray` | SNI tray at the right end of the bar; dwl owns `org.kde.StatusNotifierWatcher`. |
+| `client-opacity` | `Super+o` opacity +10%, `Super+Shift+O` opacity −10% (bound in `config.h`; `default_opacity 1.0f`). |
+| `dwl-ipc-unstable-v2` | `zdwl_ipc_manager_v2`/`zdwl_ipc_output_v2`; fork adds a `bar_geometry` event (since=2) publishing the middle title area on every bar draw. wmenu-caos positions its pill from it. |
 | `fix-rendermon-pending-resize-freeze` (in-tree) | Fixes the Super+F/Super+T output freeze. See `docs/BUG-FLOAT-TILE-FREEZE.md`. |
-| `attachbottom` (in-tree) | New windows open at the bottom of the stack instead of stealing the master slot. Applied. |
-| `spawnorfocus` (in-tree) | `Super+b` focuses firefox if running, spawns it otherwise. Applied. |
-| `warpcursor` (in-tree) | Cursor jumps into the newly focused window — pairs with `sloppyfocus`. Applied. |
-| `alwayscenter` (in-tree) | Floating windows spawn centered on the monitor. Applied. |
-| `movestack` (in-tree) | `Super+Shift+J/K` reorders the stack. Applied. |
-| `xwayland-handle-minimize` | XWayland is enabled. Without it X11 windows that minimize can leave focus/rendering in a weird state. |
-| `foreign-toplevel-management` | Lets tools like `wlopm`, some screenshot/manage apps and newer status bars see and control windows. Cheap, stable. |
-| `primaryselection` | Adds middle-click primary selection paste for Wayland clients — near-mandatory muscle memory for X users. |
+| `attachbottom` (in-tree) | New windows open at the bottom of the stack. |
+| `spawnorfocus` (in-tree) | `Super+b` focuses firefox if running, spawns it otherwise. |
+| `warpcursor` (in-tree) | Cursor jumps into the newly focused window (pairs with `sloppyfocus`). |
+| `alwayscenter` (in-tree) | Floating windows spawn centered on the monitor. |
+| `movestack` (in-tree) | `Super+Shift+J/K` reorders the stack. |
 
-> The five movement patches above (`attachbottom`, `spawnorfocus`, `movestack`,
-> `warpcursor`, `alwayscenter`) are applied and committed — see
-> `docs/KEYBINDS.md` for their binds and `patches/<name>/README.md` for each
-> patch's details and deviations.
+## Notable deviations from upstream
 
-## Layout / window management (choose what fits your flow)
+- **All tag cells render as purple pills** — `SchemeSel` unconditionally,
+  regardless of tagset/occupancy (upstream draws unselected tags with
+  `SchemeNorm`).
+- **`bar_geometry` = middle title area** — upstream/original IPC semantics
+  send the status area; the fork repurposed the payload to the middle region
+  (tags+layout symbol → status text), output-relative logical pixels, sent
+  for every monitor on every bar draw.
+- **No `/tmp/dwl-bar-geometry` file writer** — removed; IPC replaces it.
+- The fork historically tried an external `dwlb-geometry` overlay bar; it is
+  retired (segfaulted on first frame) — the native bar is the bar.
 
-| Patch | Why |
-|---|---|
-| `pertag` | Per-tag layout memory: keep tag 1 tiled, tag 2 floating, etc. Directly complements the Super+F/Super+T workflow and removes the "global layout" surprise. |
-| `gaps` / `vanitygaps` | Window gaps. Pure aesthetic; only if you like the look. |
-| `centeredmaster` / `dwindle` / `column` | Alternative tiling layouts beyond `[]=`/`[M]`. |
+## Not applied (deliberately)
 
-## Scratchpads / workflow
-
-| Patch | Why |
-|---|---|
-| `namedscratchpads` | Drop-down terminals/utilities (e.g. a scratch `foot`), like sway scratchpads. |
-| `swallow` | Terminals swallow child GUI apps; close the app, the terminal returns. Very dwm-feel. |
-
-## Bar-related (only if you move off `-no-ipc`)
-
-| Patch | Why |
-|---|---|
-| `ipc` | Enables the `dwl-ipc-unstable-v2` protocol that `dwlb` needs for full bar mode (tags, layout, titles, per-monitor). Your `dwlb-geometry` build already ships the protocol stubs. Combine with the `ipc` patch and drop `-no-ipc` from `start-dwl.sh`. |
-| `hide_vacant_tags` | With the `ipc` patch: hides empty tags in the bar. |
-
-## Not recommended here
-
-- `autostart` — you already use `dwl -s`; no need.
-- `systemd` — only if you want dwl itself as a systemd user service.
-- `borders`/`smartborders`/`bar-*` — `borderpx = 0` and external `dwlb`; not applicable.
-- `simpleborders` — reported as aggravating the very freeze fixed above (issue #1203 thread); avoid.
-- `tearing`/`fullscreenadaptivesync`/`gamepad-bindings` — hardware/gaming specific; skip unless you game on this machine.
-- `touch-input`/`tablet-input`/`virtual-pointer` — no touch/tablet hardware present.
+- `hide_vacant_tags` — all tags stay visible (purple pill look).
+- `borders`/`smartborders`/`bar-*` — `borderpx = 0`, native bar is used.
+- `autostart` — session uses `dwl -s` (start-dwl.sh).
+- `systemd`, `tearing`, `touch-input` — not applicable to this hardware.
 
 ## Notes
 
-- `Super+F` in the default config switches the **whole monitor** to the
-  floating layout. To float **just the focused window**, use
-  `Super+Shift+Space` (bound to `togglefloating`).
 - Rebase/refresh patches against `upstream` before applying; dwl moves fast.
-- Keep patches in `patches/` and regenerate after upstream merges the 
-  equivalent fix (dwl !1208) so `fix-rendermon-pending-resize-freeze` can be dropped.
+- Regenerate after upstream merges the equivalent fix (dwl !1208) so
+  `fix-rendermon-pending-resize-freeze` can be dropped.

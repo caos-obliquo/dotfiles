@@ -1,11 +1,16 @@
 # dwl - dwm for Wayland
 
-> **caos-obliquo fork** — DraculaWL build (dwl + dwlb-geometry + wmenu-caos).
+> **caos-obliquo fork** — DraculaWL build (dwl + wmenu-caos).
 >
 > - Keybinds: [`docs/KEYBINDS.md`](docs/KEYBINDS.md)
 > - Patch index: [`docs/PATCHES.md`](docs/PATCHES.md)
 > - Output-freeze fix writeup: [`docs/BUG-FLOAT-TILE-FREEZE.md`](docs/BUG-FLOAT-TILE-FREEZE.md)
 > - Applied patches: [`patches/`](patches/)
+>
+> Bar model: **native dwl bar** (sewn `bar` patch) — no external overlay bar.
+> Publishes the middle title area over the `dwl-ipc-unstable-v2` protocol's
+> `bar_geometry` event so wmenu-caos can position its launcher pill exactly.
+> Opacity: `Super+o` +10% / `Super+Shift+O` −10% (client-opacity patch).
 
 ---
 

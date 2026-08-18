@@ -106,7 +106,6 @@ Source of truth: `config.h`. Layout: **ABNT2 (Brazilian)**, `MODKEY` = Super.
 | App | Rule |
 |---|---|
 | `wmenu-center` | floating, opacity 0.85 |
-| Gimp (example) | floating, opacity 1.0 |
 | firefox (example) | tag 9 |
 
 ## Layouts available

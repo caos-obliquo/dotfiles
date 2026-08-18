@@ -3,7 +3,7 @@
 # autorice-deploy.sh
 # EliteBook 645 G11 - dwl DraculaWL rice deployment
 #
-# Stack: dwl + dwlb-geometry + wmenu-caos + foot + tmux + nvim
+# Stack: dwl + wmenu-caos + foot + tmux + nvim
 #        zsh + atuin + ccze + mako + zathura + kaprica + widle + wlock
 #
 # Assumes: Fresh Arch install, user account created, sudo working
@@ -23,7 +23,6 @@ BUILDS_DIR="$HOME/builds"
 WALLS_DIR="$HOME/walls"
 
 DWL_REPO="https://github.com/caos-obliquo/dwl.git"
-DWLB_REPO="https://github.com/caos-obliquo/dwlb-geometry.git"
 WMENU_REPO="https://github.com/caos-obliquo/wmenu-caos.git"
 
 RED='\033[0;31m'
@@ -276,35 +275,6 @@ build_dwl() {
     success "dwl installed"
 }
 
-# build dwlb-geometry
-
-build_dwlb() {
-    section "Building dwlb-geometry"
-
-    mkdir -p "$BUILDS_DIR"
-    cd "$BUILDS_DIR"
-
-    if [ -d "dwlb-geometry" ]; then
-        log "dwlb-geometry exists, updating..."
-        git -C dwlb-geometry pull || true
-    else
-        git clone "$DWLB_REPO" dwlb-geometry
-    fi
-
-    cd dwlb-geometry
-    cp "$DOTFILES_DIR/builds/dwlb-geometry/config.h" . 2>/dev/null ||
-        {
-            warn "No config.h in dotfiles, using config.def.h"
-            cp config.def.h config.h
-        }
-
-    make clean
-    make || error "dwlb-geometry build failed"
-    sudo make install
-
-    success "dwlb-geometry installed"
-}
-
 # build wmenu-caos (meson)
 
 build_wmenu() {
@@ -325,6 +295,7 @@ build_wmenu() {
     cd wmenu-caos
     cp "$DOTFILES_DIR/builds/wmenu-caos/config.h" . 2>/dev/null || warn "No config.h for wmenu-caos"
     cp "$DOTFILES_DIR/builds/wmenu-caos/menu.c" . 2>/dev/null || warn "No menu.c for wmenu-caos"
+    cp "$DOTFILES_DIR/builds/wmenu-caos/wayland.c" . 2>/dev/null || warn "No wayland.c for wmenu-caos"
 
     rm -rf build
     meson setup build
@@ -585,7 +556,6 @@ BANNER
     setup_network
     clone_dotfiles
     build_dwl
-    build_dwlb
     build_wmenu
     build_kaprica
     build_wclipmenu
