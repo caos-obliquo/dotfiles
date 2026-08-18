@@ -83,7 +83,9 @@ Text format: `<icon> artist - title`.
 
 ## Known issues
 
-- Window-tab nerd icons may not appear after a config reload until the
-  `tmux-nerd-font-window-name` plugin is re-sourced by TPM (`prefix` + `I`, or
-  restart tmux). `automatic-rename-format` can still read as plain
-  `#{pane_current_command}`; the config itself is correct.
+- Window-tab nerd icons disappear from a window once it is renamed manually
+  (`prefix` + `,`): tmux sets that window's `automatic-rename` to off, so the
+  icon-prefixed name is no longer applied. Re-enable per window with
+  `tmux set-window-option -t <win> automatic-rename on`, or open a new window
+  (new windows inherit the global `automatic-rename on`). The plugin and
+  `automatic-rename-format` are correct — only the per-window flag is the issue.
