@@ -1,6 +1,6 @@
 #!/bin/bash
 # tmux status-right: youtui playback via /tmp/youtui-state (playerctl-daemon.sh)
-# Format:  <icon> artist - title    green=playing grey=paused
+# Format:  <play|pause|stop icon> artist - title    green=playing grey=paused/stop
 # Marquee-scroll when text exceeds 40% of client width (1 char/sec via status-interval).
 # Smooth loop: text scrolls out → 4-space gap → text repeats (seamless, no snap-back).
 
@@ -12,12 +12,12 @@ EOF
 [ -z "$artist" ] && exit 0
 
 case "$status" in
-  Playing) icon=""; color="#50fa7b" ;;  # green
-  Paused)  icon="󰏤"; color="#6272a4" ;;  # grey
-  *)       icon=""; color="#6272a4" ;;  # stop, grey
+  Playing) icon=""; color="#50fa7b" ;;  # green play
+  Paused)  icon=""; color="#6272a4" ;;  # grey pause
+  *)       icon=""; color="#6272a4" ;;  # stop, grey
 esac
 
-text="$artist - $title"
+text="$icon $artist - $title"
 
 # 40% of client width; fallback 120 if tmux unreachable
 WIDTH=$(tmux display-message -p '#{client_width}' 2>/dev/null || echo 120)
