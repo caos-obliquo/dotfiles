@@ -19,6 +19,10 @@ Applied and committed in the caos-obliquo/dwl fork. Patches live in the fork's
 | `warpcursor` (in-tree) | Cursor jumps into the newly focused window (pairs with `sloppyfocus`). |
 | `alwayscenter` (in-tree) | Floating windows spawn centered on the monitor. |
 | `movestack` (in-tree) | `Super+Shift+J/K` reorders the stack. |
+| `swallow` | Terminal swallow — child clients take over the terminal's slot (terminal hidden while child open). `Mod+a` toggle swallow focused into next client, `Mod+Shift+a` toggle auto-swallow (on by default). foot is the `isterm=1, noswallow=1` host rule. |
+| `gaps` | Tiled window gutters + `smartgaps` (no outer gap with one window). `Mod+Shift+g` toggles. `gappx = 6`. |
+| `unclutter` | Auto-hide the cursor after `cursor_timeout` (5s) idle; returns on activity. |
+| `bottomstack` | `bstack`/`bstackhoriz` layouts (`TTT`, `===`). `Mod+u` / `Mod+Shift+U` select them. |
 
 ## Notable deviations from upstream
 
