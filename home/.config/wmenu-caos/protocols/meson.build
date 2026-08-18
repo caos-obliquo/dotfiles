@@ -14,6 +14,7 @@ protocols = [
 	[wl_protocol_dir, 'stable/xdg-shell/xdg-shell.xml'],
 	[wl_protocol_dir, 'staging/xdg-activation/xdg-activation-v1.xml'],
 	['wlr-layer-shell-unstable-v1.xml'],
+	['dwl-ipc-unstable-v2.xml'],
 ]
 
 wl_protos_src = []
