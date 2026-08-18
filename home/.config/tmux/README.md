@@ -53,7 +53,8 @@ not shown on the bar).
 
 - Window-tab icons come from the `tmux-nerd-font-window-name` TPM plugin, configured in
   `tmux-nerd-font-window-name.yml` (icon map for `youtui`/`pi`/`opencode`, `fallback-icon: "?"`,
-  `show-name: true`). The plugin appends `#{window_icon}` to `automatic-rename-format`.
+  `show-name: true`). The plugin rewrites `automatic-rename-format` into a
+  `pane_current_command`→icon map (it substitutes `#{window_icon}` only if you placed that token in your format).
 - `tmux-music` reads `/tmp/youtui-state` (written by `playerctl-daemon.sh`, player `youtui`) and
   marquee-scrolls when longer than 40% of client width (1 char/sec via `status-interval 1`).
 - `~/.local/bin/tmux-icons` exists but is **currently unused** — it is text-only
