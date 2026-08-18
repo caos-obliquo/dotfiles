@@ -5,9 +5,10 @@
 # Smooth loop: text scrolls out → 4-space gap → text repeats (seamless, no snap-back).
 
 STATE=$(cat /tmp/youtui-state 2>/dev/null || echo "|")
-IFS='|' read -r status artist title <<EOF
-$STATE
-EOF
+status="${STATE%%|*}"
+rest="${STATE#*|}"
+artist="${rest%%|*}"
+title="${rest#*|}"
 
 [ -z "$artist" ] && exit 0
 
