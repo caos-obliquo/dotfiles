@@ -17,7 +17,7 @@ case "$status" in
   *)       icon=""; color="#6272a4" ;;  # stop, grey
 esac
 
-text="$icon $artist - $title"
+text="$artist - $title"
 
 # 40% of client width; fallback 120 if tmux unreachable
 WIDTH=$(tmux display-message -p '#{client_width}' 2>/dev/null || echo 120)

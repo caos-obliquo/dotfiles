@@ -1,0 +1,88 @@
+#!/bin/bash
+# tmux status-right: system icons (battery, network, volume, cpu, mem)
+# Format:  <icon> value  colored by state
+
+# Battery
+BAT_PATH="/sys/class/power_supply/BAT0"
+BAT_ICON=""
+BAT_PCT=""
+BAT_COLOR="#6272a4"
+if [ -d "$BAT_PATH" ]; then
+  BAT_PCT=$(cat "$BAT_PATH/capacity" 2>/dev/null || echo "?")
+  STATUS=$(cat "$BAT_PATH/status" 2>/dev/null || echo "Unknown")
+  case "$STATUS" in
+    Charging) BAT_ICON="󰂄"; BAT_COLOR="#50fa7b" ;;
+    Discharging)
+      if [ "$BAT_PCT" -le 15 ]; then BAT_ICON="󰂎"; BAT_COLOR="#ff5555"
+      elif [ "$BAT_PCT" -le 30 ]; then BAT_ICON="󰂑"; BAT_COLOR="#ffb86c"
+      elif [ "$BAT_PCT" -le 50 ]; then BAT_ICON="󰂓"; BAT_COLOR="#f1fa8c"
+      elif [ "$BAT_PCT" -le 80 ]; then BAT_ICON="󰂑"; BAT_COLOR="#50fa7b"
+      else BAT_ICON="󰂅"; BAT_COLOR="#50fa7b"; fi
+      ;;
+    Full) BAT_ICON="󰁹"; BAT_COLOR="#50fa7b" ;;
+    *) BAT_ICON="󰂑"; BAT_COLOR="#6272a4" ;;
+  esac
+fi
+
+# Network (check for active interface)
+NET_ICON="󰤭"
+NET_COLOR="#6272a4"
+if ip link show up | grep -q "state UP"; then
+  if ip route | grep -q "^default"; then
+    if iw dev | grep -q "type managed"; then
+      NET_ICON="󰤨"
+    else
+      NET_ICON="󰈀"
+    fi
+    NET_COLOR="#50fa7b"
+  fi
+fi
+
+# Volume (PipeWire/WirePlumber via wpctl)
+VOL_ICON="󰖁"
+VOL_PCT=""
+VOL_COLOR="#6272a4"
+if command -v wpctl >/dev/null 2>&1; then
+  VOL_OUT=$(wpctl get-volume @DEFAULT_AUDIO_SINK@ 2>/dev/null)
+  if [ -n "$VOL_OUT" ]; then
+    VOL_PCT=$(echo "$VOL_OUT" | awk '{print int($2*100)}')
+    if echo "$VOL_OUT" | grep -q "MUTED"; then
+      VOL_ICON="󰝟"
+      VOL_COLOR="#ff5555"
+    elif [ "$VOL_PCT" -ge 66 ]; then
+      VOL_ICON="󰕾"
+      VOL_COLOR="#50fa7b"
+    elif [ "$VOL_PCT" -ge 33 ]; then
+      VOL_ICON="󰖀"
+      VOL_COLOR="#50fa7b"
+    else
+      VOL_ICON="󰕿"
+      VOL_COLOR="#50fa7b"
+    fi
+  fi
+fi
+
+# CPU (simplified - just icon)
+CPU_ICON="󰻠"
+CPU_COLOR="#f1fa8c"
+
+# Memory (simplified - just icon)
+MEM_ICON="󰍛"
+MEM_COLOR="#bd93f9"
+
+# ZSH icon
+ZSH_ICON="󰌓"
+ZSH_COLOR="#8be9fd"
+
+# Build output parts (icons removed — plain text only)
+PARTS=()
+
+[ -n "$BAT_PCT" ] && PARTS+=("#[fg=$BAT_COLOR]BAT $BAT_PCT%")
+[ -n "$VOL_PCT" ] && PARTS+=("#[fg=$VOL_COLOR]VOL $VOL_PCT%")
+
+# Join with separator
+SEP="#[fg=#6272a4]  "
+printf "%s" "${PARTS[0]}"
+for p in "${PARTS[@]:1}"; do
+  printf "%s%s" "$SEP" "$p"
+done
