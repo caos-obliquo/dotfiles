@@ -101,6 +101,7 @@ Source of truth: `config.h`. Layout: **ABNT2 (Brazilian)**, `MODKEY` = Super.
 | `Super+Shift+Q` | quit dwl |
 | `Ctrl+Alt+Backspace` (Terminate_Server) | quit dwl |
 | `Ctrl+Alt+F1..F12` | `chvt` — switch VT |
+| `Super+Shift+X` | `togglebar` — show/hide bar (bare `Super+X` is reserved: Cmd+X cut via PiKVM) |
 
 ## Mouse
 
