@@ -39,10 +39,19 @@ Source of truth: `config.h`. Layout: **ABNT2 (Brazilian)**, `MODKEY` = Super.
 | `Super+t` | tile layout `[]=` |
 | `Super+f` | float layout `><>` |
 | `Super+m` | monocle `[M]` |
+| `Super+u` / `Super+Shift+U` | `bottomstack` `TTT` / `bottomstack horizontal` `===` |
 | `Super+Space` | toggle layout |
 | `Super+Shift+Space` | `togglefloating` — float only the focused window |
 | `Super+e` | `togglefullscreen` |
+| `Super+Shift+g` | `togglegaps` — toggle window gaps (gaps patch) |
 | `Super+Tab` | view last tag |
+
+## Swallow
+
+| Key | Action |
+|---|---|
+| `Super+a` | `toggleswallow` — swallow focused window into next client |
+| `Super+Shift+a` | `toggleautoswallow` — toggle auto-swallow (on by default) |
 
 ## Window kill
 
@@ -92,6 +101,7 @@ Source of truth: `config.h`. Layout: **ABNT2 (Brazilian)**, `MODKEY` = Super.
 | `Super+Shift+Q` | quit dwl |
 | `Ctrl+Alt+Backspace` (Terminate_Server) | quit dwl |
 | `Ctrl+Alt+F1..F12` | `chvt` — switch VT |
+| `Super+Shift+X` | `togglebar` — show/hide bar (bare `Super+X` is reserved: Cmd+X cut via PiKVM) |
 
 ## Mouse
 
