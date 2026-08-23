@@ -317,7 +317,11 @@ reposition_bar_geometry (struct wl_context *context)
 
   if (w == 0)
     {
-      return;
+      /* Empty workspace: no focused client, so dwl reports middle_width=0
+       * (dark theme signal). Position at the title start (middle_x) with
+       * the configured width instead of centering, so the menu does not
+       * cover the right-side status icons. */
+      w = wmenu_width;
     }
 
   /* prompt row matches the bar height; dropdown lines extend below */
