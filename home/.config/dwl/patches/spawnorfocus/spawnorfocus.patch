@@ -43,23 +43,21 @@ diff --git a/dwl.c b/dwl.c
  void
  startdrag(struct wl_listener *listener, void *data)
  {
+
 diff --git a/config.def.h b/config.def.h
-index 34e500e..86148ad 100644
 --- a/config.def.h
 +++ b/config.def.h
-@@ -96,6 +96,7 @@ static const char *const autostart[]
- /* commands */
- static const char *termcmd[] = { "foot", NULL };
+@@ -95,7 +95,7 @@ static const char *termcmd[] = { "foot", NULL };
  static const char *menucmd[] = { "wmenu-run", "-t", NULL };
-+static const char *browsercmd[] = { "firefox", NULL, "firefox" };
+-static const char *browsercmd[] = { "firefox", NULL, "firefox" };
++static const char *browsercmd[] = { "waterfox", "Waterfox", NULL };
+ static const char *dismisscmd[] = { "makoctl", "dismiss", NULL };
+ static const char *passcmd[] = { "passmenu", NULL }; /* requires passmenu (pass) */
  static const char *lockcmd[] = { "wlock", NULL };
- static const char *clipcmd[] = { "wclipmenu", NULL };
- static const char *clipimgcmd[] = { "wclipmenu", "image", NULL };
-@@ -126,6 +127,7 @@ static const Key keys[] = {
- 
+@@ -128,6 +128,7 @@ static const Key keys[] = {
    /* launchers */
    { MODKEY, XKB_KEY_d, spawn, { .v = menucmd } },
-+  { MODKEY, XKB_KEY_b, spawnorfocus, { .v = browsercmd } },
+   { MODKEY, XKB_KEY_b, spawnorfocus, { .v = browsercmd } },
++  { MODKEY | WLR_MODIFIER_SHIFT, XKB_KEY_D, spawn, { .v = dismisscmd } },
++  { MODKEY, XKB_KEY_g, spawn, { .v = passcmd } },
    { MODKEY | WLR_MODIFIER_SHIFT, XKB_KEY_Return, spawn, { .v = termcmd } },
-   { MODKEY | WLR_MODIFIER_SHIFT, XKB_KEY_L, spawn, { .v = lockcmd } },
- 	{ MODKEY, XKB_KEY_p, spawn, { .v = clipcmd } },

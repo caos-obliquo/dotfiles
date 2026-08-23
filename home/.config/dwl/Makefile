@@ -12,17 +12,29 @@ DWLDEVCFLAGS = -g -Wpedantic -Wall -Wextra -Wdeclaration-after-statement \
 	-Wfloat-conversion
 
 # CFLAGS / LDFLAGS
-PKGS      = wayland-server xkbcommon libinput $(XLIBS)
+PKGS      = wayland-server xkbcommon libinput pixman-1 fcft $(XLIBS) dbus-1
 DWLCFLAGS = `$(PKG_CONFIG) --cflags $(PKGS)` $(WLR_INCS) $(DWLCPPFLAGS) $(DWLDEVCFLAGS) $(CFLAGS)
 LDLIBS    = `$(PKG_CONFIG) --libs $(PKGS)` $(WLR_LIBS) -lm $(LIBS)
 
+TRAYOBJS = systray/watcher.o systray/tray.o systray/item.o systray/icon.o systray/menu.o systray/helpers.o
+TRAYDEPS = systray/watcher.h systray/tray.h systray/item.h systray/icon.h systray/menu.h systray/helpers.h
+
 all: dwl
-dwl: dwl.o util.o
-	$(CC) dwl.o util.o $(DWLCFLAGS) $(LDFLAGS) $(LDLIBS) -o $@
-dwl.o: dwl.c client.h config.h config.mk cursor-shape-v1-protocol.h \
+dwl: dwl.o util.o dbus.o dwl-ipc-unstable-v2-protocol.o $(TRAYOBJS)
+	$(CC) dwl.o util.o dbus.o dwl-ipc-unstable-v2-protocol.o $(TRAYOBJS) $(DWLCFLAGS) $(LDFLAGS) $(LDLIBS) -o $@
+dwl.o: dwl.c client.h dbus.h config.h config.mk cursor-shape-v1-protocol.h \
 	pointer-constraints-unstable-v1-protocol.h wlr-layer-shell-unstable-v1-protocol.h \
-	wlr-output-power-management-unstable-v1-protocol.h xdg-shell-protocol.h
+	wlr-output-power-management-unstable-v1-protocol.h xdg-shell-protocol.h \
+	dwl-ipc-unstable-v2-protocol.h \
+	$(TRAYDEPS)
 util.o: util.c util.h
+dbus.o: dbus.c dbus.h
+systray/watcher.o: systray/watcher.c $(TRAYDEPS)
+systray/tray.o: systray/tray.c $(TRAYDEPS)
+systray/item.o: systray/item.c $(TRAYDEPS)
+systray/icon.o: systray/icon.c $(TRAYDEPS)
+systray/menu.o: systray/menu.c $(TRAYDEPS)
+systray/helpers.o: systray/helpers.c $(TRAYDEPS)
 
 # wayland-scanner is a tool which generates C headers and rigging for Wayland
 # protocols, which are specified in XML. wlroots requires you to rig these up
@@ -45,11 +57,17 @@ wlr-output-power-management-unstable-v1-protocol.h:
 xdg-shell-protocol.h:
 	$(WAYLAND_SCANNER) server-header \
 		$(WAYLAND_PROTOCOLS)/stable/xdg-shell/xdg-shell.xml $@
+dwl-ipc-unstable-v2-protocol.h:
+	$(WAYLAND_SCANNER) server-header \
+		protocols/dwl-ipc-unstable-v2.xml $@
+dwl-ipc-unstable-v2-protocol.c:
+	$(WAYLAND_SCANNER) private-code \
+		protocols/dwl-ipc-unstable-v2.xml $@
 
 config.h:
 	cp config.def.h $@
 clean:
-	rm -f dwl *.o *-protocol.h
+	rm -f dwl *.o *-protocol.h dwl-ipc-unstable-v2-protocol.c systray/*.o
 
 dist: clean
 	mkdir -p dwl-$(VERSION)

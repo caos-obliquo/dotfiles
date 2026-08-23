@@ -6,14 +6,15 @@ wmenu - dynamic menu for Wayland
 
 # SYNOPSIS
 
-*wmenu* [-biPv] \
+*wmenu* [-bctiPv] \
   [-f _font_] \
   [-l _lines_] \
   [-o _output_] \
   [-p _prompt_] \
   [-N _color_] [-n _color_] \
   [-M _color_] [-m _color_] \
-  [-S _color_] [-s _color_]
+  [-S _color_] [-s _color_] \
+  [-B _color_] [-w _width_]
 
 *wmenu-run* ...
 
@@ -31,6 +32,16 @@ $PATH and runs the result.
 
 *-b*
 	wmenu appears at the bottom of the screen.
+
+*-c*
+	wmenu is centered on the output.
+
+*-t*
+	wmenu appears as a top-center title bar; its geometry (position, width,
+	bar height) is read from the dwl-ipc *bar_geometry* event. On an empty
+	workspace (no focused client) dwl reports *middle_width = 0* and wmenu
+	renders with the dark *bar_bg*/*bar_fg* colors at the title start instead
+	of the purple pill.
 
 *-i*
 	wmenu matches menu items case insensitively.
@@ -72,6 +83,19 @@ $PATH and runs the result.
 
 *-s* _RRGGBB[AA]_
 	defines the selection foreground color.
+
+*-B* _RRGGBB[AA]_
+	defines the menu background color.
+
+*-w* _width_
+	defines the minimum menu width in pixels.
+
+# IMAGES
+
+Lines beginning with \[img:_path_\], for example
+\[img:/tmp/wclipmenu-thumb-42.png\], render a PNG thumbnail: the image is scaled
+to 128px on its longest side and vertically centered in a 160px row. The
+\[img:...\] prefix is stripped before the item is printed to stdout.
 
 # USAGE
 

@@ -53,15 +53,18 @@ Show all windows with a tag.
 Move window to a single tag.
 .It Mod-Ctrl-Shift-[1-9]
 Toggle tag for window.
-.It Mod-p
+.It Mod-d
 Spawn
 .Xr wmenu-run 1 .
+.It Mod-p
+Spawn
+.Xr wclipmenu 1 .
 .It Mod-Shift-Return
 Spawn
 .Xr foot 1 .
 .It Mod-[jk]
 Move focus down/up the stack.
-.It Mod-[id]
+.It Mod-Shift-[iy]
 Increase/decrease number of windows in master area.
 .It Mod-[hl]
 Decrease/increase master area.
@@ -69,10 +72,10 @@ Decrease/increase master area.
 Move window on top of stack or switch top of stack with second window.
 .It Mod-Tab
 Show only all windows with previous tag.
-.It Mod-Shift-c
+.It Mod-q
 Close window.
 .It Mod-t
-Switch to tabbed layout.
+Switch to tile layout.
 .It Mod-f
 Switch to floating layout.
 .It Mod-m
@@ -100,6 +103,9 @@ Quit
 .Nm .
 .El
 These might differ depending on your keyboard layout.
+The full keybind list for this build (including bstack, gaps, togglebar,
+media keys and screenshots) lives in
+.Pa docs/KEYBINDS.md .
 .Ss Mouse commands
 .Bl -tag -width 20n -offset indent -compact
 .It Mod-Button1

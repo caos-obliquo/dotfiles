@@ -1,5 +1,5 @@
 project(
-	'wmenu',
+	'wmenu-caos',
 	'c',
 	version: '0.2.0',
 	license: 'MIT',

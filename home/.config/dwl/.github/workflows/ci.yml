@@ -1,0 +1,16 @@
+name: ci
+on:
+  pull_request:
+  push:
+    branches: [main]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: archlinux:latest
+    steps:
+      - run: pacman -Syyu --noconfirm base-devel git dbus fcft tllist wayland wayland-protocols libinput libxcb xcb-util-wm pkgconf
+      - run: pacman -U --noconfirm https://archive.archlinux.org/packages/w/wlroots0.19/wlroots0.19-0.19.3-1-x86_64.pkg.tar.zst
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - run: make

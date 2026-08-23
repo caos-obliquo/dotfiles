@@ -246,6 +246,19 @@ render_vertical_page (struct menu *menu, cairo_t *cairo, struct page *page)
 
 // Renders the menu to cairo.
 static void
+rounded_rect (cairo_t *cairo, double x, double y, double w, double h,
+              double r)
+{
+  cairo_new_sub_path (cairo);
+  cairo_arc (cairo, x + w - r, y + r, r, -1.5707963, 0.0);
+  cairo_arc (cairo, x + w - r, y + h - r, r, 0.0, 1.5707963);
+  cairo_arc (cairo, x + r, y + h - r, r, 1.5707963, 3.1415927);
+  cairo_arc (cairo, x + r, y + r, r, 3.1415927, 4.7123890);
+  cairo_close_path (cairo);
+}
+
+// Renders the menu to cairo.
+static void
 render_to_cairo (struct menu *menu, cairo_t *cairo)
 {
   // Clear the reused ARGB32 buffer first: repainting OVER the previous
@@ -260,7 +273,17 @@ render_to_cairo (struct menu *menu, cairo_t *cairo)
                          (menu->normalbg >> 16 & 0xFF) / 255.0,
                          (menu->normalbg >> 8 & 0xFF) / 255.0,
                          (menu->normalbg & 0xFF) / 255.0);
-  cairo_paint (cairo);
+  if (menu->position == POSITION_CENTER)
+    {
+      // Floating launcher box: rounded pill.
+      rounded_rect (cairo, 0, 0, menu->width, menu->height, 10);
+      cairo_fill (cairo);
+    }
+  else
+    {
+      // Over-the-bar (TOP_CENTER IPC): flat, matching the dwl bar.
+      cairo_paint (cairo);
+    }
 
   // Render prompt and input
   render_prompt (menu, cairo);
@@ -278,18 +301,6 @@ render_to_cairo (struct menu *menu, cairo_t *cairo)
         {
           render_horizontal_page (menu, cairo, menu->sel->page);
         }
-    }
-
-  // 2px border frame around the whole box, drawn on top.
-  if (menu->position == POSITION_CENTER)
-    {
-      cairo_set_operator (cairo, CAIRO_OPERATOR_OVER);
-      double bw = 2.0;
-      cairo_set_line_width (cairo, bw);
-      cairo_set_source_u32 (cairo, menu->border);
-      cairo_rectangle (cairo, bw / 2, bw / 2, menu->width - bw,
-                       menu->height - bw);
-      cairo_stroke (cairo);
     }
 }
 

@@ -13,8 +13,8 @@ README is the map, not the encyclopedia.
 
 | Tool | Role | Layer |
 |---|---|---|
-| **dwl** | Wayland compositor (patched fork: freeze fix + 7 patches) | WM |
-| **dwlb** | Status bar — geometry/colors to `/tmp/dwlb-geometry` | UI |
+| **dwl** | Wayland compositor (patched fork: freeze fix + 13 patches) | WM |
+| **dwl bar** | Sewn-in status bar — `dwl-status.sh` stdin pipe, Dracula `^fg()` markup | UI |
 | **wmenu-caos** | Menus (launcher, pickers, passmenu) | UI |
 | **wclipmenu** | Clipboard picker (text + image thumbnails) | UI |
 | **kaprica** | Clipboard history store (`kapd` daemon + `kapc` CLI) | data |
@@ -74,11 +74,12 @@ start-dwl.sh           → session entry (bar, wallpaper, clipboard, idle→lock
 
 ## How the bar/launcher integration works
 
-`dwlb` writes `<middle_x> <middle_width> <bar_height> <bg> <fg>` to
-`/tmp/dwlb-geometry` every frame; `wmenu-caos` reads it to position and
-color itself — `-t` parks the launcher in the bar's title section, `-c`
-centers pickers on screen. wmenu always looks like part of the bar with zero
-runtime color flags.
+dwl pushes `bar_geometry` (middle_x, middle_width, bar_height, colors) to
+overlay clients over the dwl-ipc protocol; `wmenu-caos` uses it to position
+and color itself — `-t` parks the launcher in the bar's title section, `-c`
+centers pickers on screen. On an empty workspace (no focused client) dwl
+reports `middle_width = 0` and wmenu renders dark at the title start. wmenu
+always looks like part of the bar with zero runtime color flags.
 
 ## How the clipboard picker works
 
@@ -113,7 +114,7 @@ Start the session:
 start-dwl.sh
 ```
 
-kapd, dwlb + the status feed, wawa wallpaper, kanshi (if installed), and the
+kapd + the status feed, wawa wallpaper, kanshi (if installed), and the
 `widle -t 300 wlock` idle→lock chain all start from there.
 
 ## Dependencies
@@ -123,8 +124,8 @@ pacman -S grim slurp wl-clipboard pamixer playerctl atuin pass \
           foot mako htop ccze zathura zathura-pdf-mupdf widle kanshi
 ```
 
-wmenu-caos needs cairo/pango/wayland/xkbcommon + wlr-layer-shell protocol
-(meson+ninja). `wclipmenu image` needs ImageMagick.<br>
+wmenu-caos needs cairo/pango/wayland/xkbcommon + wayland-protocols (ships
+wlr-layer-shell; meson+ninja). `wclipmenu image` needs ImageMagick.<br>
 **Secrets**: Last.fm/Genius/MusicBrainz/ListenBrainz keys live in
 `~/.config/youtui/config.toml` — never commit (gitignored).
 
