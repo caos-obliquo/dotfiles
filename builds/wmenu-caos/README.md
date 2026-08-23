@@ -3,7 +3,7 @@
 Deploy overrides for [caos-obliquo/wmenu-caos](https://github.com/caos-obliquo/wmenu-caos)
 (meson+ninja; `autorice-deploy.sh` copies these into the clone before build):
 
-- `config.h` — Dracula colors + `wmenu_width 720` (centered fallback width)
+- `config.h` — Dracula colors + `wmenu_width 720` (fallback width)
 - `menu.c` — pill styling (borderless, height = bar height)
 - `wayland.c` — the dwl-IPC positioning path (`POSITION_TOP_CENTER`)
 
@@ -18,3 +18,7 @@ anchored top-left. In `POSITION_TOP_CENTER` mode it subscribes to
 - **Colors**: adopts dwl's `SchemeNorm` bg/fg from the event (normal+prompt bg/fg; selection fg/bg swapped).
 
 Fallback without IPC: centered at `wmenu_width` (no bar geometry available).
+On an **empty workspace** dwl reports `middle_width = 0` (dark-theme signal):
+wmenu renders with the dark `bar_bg`/`bar_fg` colors at the title start
+(`middle_x`) instead of the purple pill, so it never covers the right-side
+status icons.

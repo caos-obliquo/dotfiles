@@ -44,9 +44,7 @@ Each fork has its compile-time config checked into `builds/<tool>/`:
 ```
 builds/
 ├── dwl/
-│   └── config.h              # patched dwl: 7 patches, keybinds, colors, opacity
-├── dwlb-geometry/
-│   └── config.h              # bar geometry, colors, status format
+│   └── config.h              # patched dwl: 13 patches, keybinds, colors, opacity
 └── wmenu-caos/
     ├── config.h              # wmenu colors, fonts, height, launcher behavior
     └── menu.c                # menu item rendering (thumbnails for wclipmenu image)
@@ -85,7 +83,6 @@ Edit the `*_REPO` variables at the top of `autorice-deploy.sh`:
 
 ```bash
 DWL_REPO="git@github.com:youruser/dwl.git"
-DWLB_REPO="git@github.com:youruser/dwlb-geometry.git"
 WMENU_REPO="git@github.com:youruser/wmenu-caos.git"
 ```
 
@@ -106,7 +103,6 @@ Source the script and call individual functions:
 ```bash
 source ./autorice-deploy.sh
 build_dwl
-build_dwlb
 ```
 
 ---
@@ -132,15 +128,14 @@ build_dwlb
 | kaprica service won't enable | Must run inside graphical session; enable after first login: `systemctl --user enable --now kaprica` |
 | wclipmenu build fails `KAPC_PATH` | Script patches `src/wclipmenu.h` — verify `$HOME` expansion worked |
 | ccze build fails | Needs `ncurses pcre autoconf automake` (installed in `build_ccze`) |
-| dwl/dwlb build fails | Check `config.h` exists in `builds/<tool>/`; copy from `config.def.h` if missing |
+| dwl build fails | Check `config.h` exists in `builds/<tool>/`; copy from `config.def.h` if missing |
 
 ---
 
 ## Related docs
 
 - [Start-dwl session entry](home/.local/bin/start-dwl.sh) — what runs at TTY login
-- [dwl patches](home/.config/dwl/patches/README.md) — 7 patches applied
-- [dwlb-geometry bar](home/.config/dwlb-geometry/README.md) — bar config
+- [dwl patches](home/.config/dwl/patches/README.md) — 13 patches applied
 - [wmenu-caos](home/.config/wmenu-caos/README.md) — launcher/picker config
 - [kaprica](home/.config/kaprica/README.md) — clipboard history daemon
 - [wclipmenu](home/.config/wclipmenu/README.md) — clipboard picker

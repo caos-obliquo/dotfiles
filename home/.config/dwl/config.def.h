@@ -11,7 +11,7 @@ static int gaps = 0; /* 1 means gaps between windows are added */
 static const unsigned int gappx = 6; /* gap pixel between windows */
 static const unsigned int borderpx = 0; /* window border width */
 static const unsigned int systrayspacing = 2; /* systray spacing */
-static const int showsystray = 1; /* 0 means no systray */
+static const int showsystray = 0; /* 0 means no systray */
 
 static const int showbar = 1; /* 0 means no bar */
 static const int topbar = 1; /* 0 means bottom bar */
@@ -19,6 +19,8 @@ static const int topbar = 1; /* 0 means bottom bar */
 /* Dracula theme — bar colors: fg, bg, border (uint32_t ARGB, alpha baked in) */
 static const float rootcolor[] = COLOR (0x222222ff);
 static const float fullscreen_bg[] = { 0.0f, 0.0f, 0.0f, 1.0f };
+static int enableautoswallow = 1; /* enables autoswallowing newly spawned clients */
+static float swallowborder = 1.0f; /* add this multiplied by borderpx to border when a client is swallowed */
 static const float default_opacity = 1.0f;
 static const char *fonts[] = { "JetBrainsMono Nerd Font:size=16" };
 static uint32_t colors[][3] = {
@@ -42,14 +44,154 @@ static char truncate_symbol[] = "...";
 
 /* window rules: appid, title, tags, isfloating, opacity, isterm, noswallow, monitor, appicon */
 static const Rule rules[] = {
+  { NULL, NULL, 0, 0, 1.0f, 0, 0, -1, "󱂚" }, /* generic fallback icon for unmatched apps */
   { "foot", NULL, 0, 0, 1.0f, 1, 1, -1, "󰆍" },
   { "wmenu-center", NULL, 0, 1, 0.85f, 0, 0, -1, NULL },
-  { "waterfox", NULL, 1 << 8, 0, 1.0f, 0, 0, -1, "󰈹" },
-  { "chromium", NULL, 0, 0, 1.0f, 0, 0, -1, "󰊯" },
-  { "steam", "steam", 0, 0, 1.0f, 0, 0, -1, "" },
+  { "steam", NULL, 0, 0, 1.0f, 0, 0, -1, "" },
   { "youtui", NULL, 0, 0, 1.0f, 0, 0, -1, "󰑈" },
-  { NULL, "pipemixer", 0, 0, 1.0f, 0, 0, -1, "󰄠" },
+  { NULL, "pipemixer", 0, 0, 1.0f, 0, 0, -1, "󱄠" },
   { NULL, "bluetoothctl", 0, 0, 1.0f, 0, 0, -1, "" },
+  { NULL, "nvim", 0, 0, 1.0f, 0, 0, -1, "" },
+  { NULL, "vim", 0, 0, 1.0f, 0, 0, -1, "" },
+  { NULL, "hx", 0, 0, 1.0f, 0, 0, -1, "󰔤" },
+  { NULL, "emacs", 0, 0, 1.0f, 0, 0, -1, "" },
+  { NULL, "nano", 0, 0, 1.0f, 0, 0, -1, "" },
+  { NULL, "htop", 0, 0, 1.0f, 0, 0, -1, "" },
+  { NULL, "btop", 0, 0, 1.0f, 0, 0, -1, "" },
+  { NULL, "top", 0, 0, 1.0f, 0, 0, -1, "" },
+  { NULL, "glances", 0, 0, 1.0f, 0, 0, -1, "" },
+  { NULL, "ranger", 0, 0, 1.0f, 0, 0, -1, "" },
+  { NULL, "lf", 0, 0, 1.0f, 0, 0, -1, "" },
+  { NULL, "yazi", 0, 0, 1.0f, 0, 0, -1, "" },
+  { NULL, "newsboat", 0, 0, 1.0f, 0, 0, -1, "󰭹" },
+  { NULL, "lazygit", 0, 0, 1.0f, 0, 0, -1, "" },
+  { NULL, "git", 0, 0, 1.0f, 0, 0, -1, "" },
+  { NULL, "tig", 0, 0, 1.0f, 0, 0, -1, "" },
+  { NULL, "gitui", 0, 0, 1.0f, 0, 0, -1, "" },
+  { NULL, "python", 0, 0, 1.0f, 0, 0, -1, "" },
+  { NULL, "python3", 0, 0, 1.0f, 0, 0, -1, "" },
+  { NULL, "node", 0, 0, 1.0f, 0, 0, -1, "" },
+  { NULL, "npm", 0, 0, 1.0f, 0, 0, -1, "" },
+  { NULL, "yarn", 0, 0, 1.0f, 0, 0, -1, "" },
+  { NULL, "deno", 0, 0, 1.0f, 0, 0, -1, "" },
+  { NULL, "go", 0, 0, 1.0f, 0, 0, -1, "" },
+  { NULL, "rustc", 0, 0, 1.0f, 0, 0, -1, "" },
+  { NULL, "cargo", 0, 0, 1.0f, 0, 0, -1, "" },
+  { NULL, "rustup", 0, 0, 1.0f, 0, 0, -1, "" },
+  { NULL, "gcc", 0, 0, 1.0f, 0, 0, -1, "" },
+  { NULL, "g++", 0, 0, 1.0f, 0, 0, -1, "" },
+  { NULL, "clang", 0, 0, 1.0f, 0, 0, -1, "" },
+  { NULL, "julia", 0, 0, 1.0f, 0, 0, -1, "" },
+  { NULL, "R", 0, 0, 1.0f, 0, 0, -1, "ﳒ" },
+  { NULL, "ruby", 0, 0, 1.0f, 0, 0, -1, "" },
+  { NULL, "php", 0, 0, 1.0f, 0, 0, -1, "" },
+  { NULL, "perl", 0, 0, 1.0f, 0, 0, -1, "" },
+  { NULL, "java", 0, 0, 1.0f, 0, 0, -1, "" },
+  { NULL, "csharp", 0, 0, 1.0f, 0, 0, -1, "" },
+  { NULL, "swift", 0, 0, 1.0f, 0, 0, -1, "" },
+  { NULL, "lua", 0, 0, 1.0f, 0, 0, -1, "" },
+  { NULL, "kotlin", 0, 0, 1.0f, 0, 0, -1, "󰬟" },
+  { NULL, "sqlite", 0, 0, 1.0f, 0, 0, -1, "" },
+  { NULL, "psql", 0, 0, 1.0f, 0, 0, -1, "" },
+  { NULL, "mysql", 0, 0, 1.0f, 0, 0, -1, "" },
+  { NULL, "redis", 0, 0, 1.0f, 0, 0, -1, "" },
+  { NULL, "docker", 0, 0, 1.0f, 0, 0, -1, "" },
+  { NULL, "kubectl", 0, 0, 1.0f, 0, 0, -1, "󱃾" },
+  { NULL, "k9s", 0, 0, 1.0f, 0, 0, -1, "󱃾" },
+  { NULL, "helm", 0, 0, 1.0f, 0, 0, -1, "󱃾" },
+  { NULL, "pacman", 0, 0, 1.0f, 0, 0, -1, "" },
+  { NULL, "paru", 0, 0, 1.0f, 0, 0, -1, "" },
+  { NULL, "yay", 0, 0, 1.0f, 0, 0, -1, "" },
+  { NULL, "apt", 0, 0, 1.0f, 0, 0, -1, "" },
+  { NULL, "nala", 0, 0, 1.0f, 0, 0, -1, "" },
+  { NULL, "dnf", 0, 0, 1.0f, 0, 0, -1, "" },
+  { NULL, "yum", 0, 0, 1.0f, 0, 0, -1, "" },
+  { NULL, "systemctl", 0, 0, 1.0f, 0, 0, -1, "" },
+  { NULL, "gdb", 0, 0, 1.0f, 0, 0, -1, "" },
+  { NULL, "valgrind", 0, 0, 1.0f, 0, 0, -1, "" },
+  { NULL, "curl", 0, 0, 1.0f, 0, 0, -1, "" },
+  { NULL, "wget", 0, 0, 1.0f, 0, 0, -1, "" },
+  { NULL, "rsync", 0, 0, 1.0f, 0, 0, -1, "" },
+  { NULL, "ping", 0, 0, 1.0f, 0, 0, -1, "" },
+  { NULL, "ssh", 0, 0, 1.0f, 0, 0, -1, "󰣀" },
+  { NULL, "scp", 0, 0, 1.0f, 0, 0, -1, "󰣀" },
+  { NULL, "tmux", 0, 0, 1.0f, 0, 0, -1, "" },
+  { NULL, "make", 0, 0, 1.0f, 0, 0, -1, "" },
+  { NULL, "cmake", 0, 0, 1.0f, 0, 0, -1, "" },
+  { NULL, "gh", 0, 0, 1.0f, 0, 0, -1, "" },
+  { NULL, "sudo", 0, 0, 1.0f, 0, 0, -1, "" },
+  { NULL, "ccze", 0, 0, 1.0f, 0, 0, -1, "󰆍" },
+  { NULL, "pass", 0, 0, 1.0f, 0, 0, -1, "󰟃" },
+  { NULL, "raw-cli", 0, 0, 1.0f, 0, 0, -1, "󰺩" },
+  { NULL, "wclipmenu", 0, 0, 1.0f, 0, 0, -1, "󰆍" },
+
+  { "imv", NULL, 0, 0, 1.0f, 0, 0, -1, "󰑿" },
+  { "thunar", NULL, 0, 0, 1.0f, 0, 0, -1, "" },
+  { "file-roller", NULL, 0, 0, 1.0f, 0, 0, -1, "󰹬" },
+  { "pavucontrol", NULL, 0, 0, 1.0f, 0, 0, -1, "" },
+  { "gamescope", NULL, 0, 0, 1.0f, 0, 0, -1, "" },
+  { "wlock", NULL, 0, 0, 1.0f, 0, 0, -1, "" },
+  { "zathura", NULL, 0, 0, 1.0f, 0, 0, -1, "󰈙" },
+  { "mpv", NULL, 0, 0, 1.0f, 0, 0, -1, "󰗋" },
+  { NULL, "procs", 0, 0, 1.0f, 0, 0, -1, "" },
+  { NULL, "btm", 0, 0, 1.0f, 0, 0, -1, "" },
+  { NULL, "bottom", 0, 0, 1.0f, 0, 0, -1, "" },
+  { NULL, "fastfetch", 0, 0, 1.0f, 0, 0, -1, "󰲳" },
+  { NULL, "bat", 0, 0, 1.0f, 0, 0, -1, "󰭟" },
+  { NULL, "eza", 0, 0, 1.0f, 0, 0, -1, "󰈹" },
+  { NULL, "fd", 0, 0, 1.0f, 0, 0, -1, "󰐤" },
+  { NULL, "rg", 0, 0, 1.0f, 0, 0, -1, "󰐤" },
+  { NULL, "fzf", 0, 0, 1.0f, 0, 0, -1, "󰒄" },
+  { NULL, "tree", 0, 0, 1.0f, 0, 0, -1, "" },
+  { NULL, "atuin", 0, 0, 1.0f, 0, 0, -1, "󰾯" },
+  { NULL, "zoxide", 0, 0, 1.0f, 0, 0, -1, "" },
+  { NULL, "tldr", 0, 0, 1.0f, 0, 0, -1, "󰔤" },
+  { NULL, "nmap", 0, 0, 1.0f, 0, 0, -1, "󰏂" },
+  { NULL, "mtr", 0, 0, 1.0f, 0, 0, -1, "󰏂" },
+  { NULL, "ncat", 0, 0, 1.0f, 0, 0, -1, "󰭟" },
+  { NULL, "nc", 0, 0, 1.0f, 0, 0, -1, "󰭟" },
+  { NULL, "netcat", 0, 0, 1.0f, 0, 0, -1, "󰭟" },
+  { NULL, "nethogs", 0, 0, 1.0f, 0, 0, -1, "󰭟" },
+  { NULL, "arp-scan", 0, 0, 1.0f, 0, 0, -1, "󰏂" },
+  { NULL, "whois", 0, 0, 1.0f, 0, 0, -1, "" },
+  { NULL, "dog", 0, 0, 1.0f, 0, 0, -1, "" },
+  { NULL, "speedtest-cli", 0, 0, 1.0f, 0, 0, -1, "" },
+  { NULL, "tailscale", 0, 0, 1.0f, 0, 0, -1, "" },
+  { NULL, "yt-dlp", 0, 0, 1.0f, 0, 0, -1, "󰗋" },
+  { NULL, "w3m", 0, 0, 1.0f, 0, 0, -1, "󰩟" },
+  { NULL, "dive", 0, 0, 1.0f, 0, 0, -1, "" },
+  { NULL, "terraform", 0, 0, 1.0f, 0, 0, -1, "ﲽ" },
+  { NULL, "magick", 0, 0, 1.0f, 0, 0, -1, "" },
+  { NULL, "convert", 0, 0, 1.0f, 0, 0, -1, "" },
+  { NULL, "brightnessctl", 0, 0, 1.0f, 0, 0, -1, "" },
+  { NULL, "pamixer", 0, 0, 1.0f, 0, 0, -1, "󱄠" },
+  { NULL, "cppcheck", 0, 0, 1.0f, 0, 0, -1, "" },
+  { NULL, "luacheck", 0, 0, 1.0f, 0, 0, -1, "" },
+  { NULL, "luarocks", 0, 0, 1.0f, 0, 0, -1, "" },
+  { NULL, "meson", 0, 0, 1.0f, 0, 0, -1, "" },
+  { NULL, "ninja", 0, 0, 1.0f, 0, 0, -1, "" },
+  { NULL, "kapc", 0, 0, 1.0f, 0, 0, -1, "" },
+  { NULL, "kapd", 0, 0, 1.0f, 0, 0, -1, "" },
+  { NULL, "kapg", 0, 0, 1.0f, 0, 0, -1, "" },
+  { NULL, "pi", 0, 0, 1.0f, 0, 0, -1, "π" },
+  { NULL, "opencode", 0, 0, 1.0f, 0, 0, -1, "󰺩" },
+  { NULL, "tiny-agents", 0, 0, 1.0f, 0, 0, -1, "󰺩" },
+  { NULL, "litellm", 0, 0, 1.0f, 0, 0, -1, "󰺩" },
+  { NULL, "hf", 0, 0, 1.0f, 0, 0, -1, "󰺩" },
+  { NULL, "huggingface-cli", 0, 0, 1.0f, 0, 0, -1, "󰺩" },
+  { NULL, "uv", 0, 0, 1.0f, 0, 0, -1, "󰺩" },
+  { NULL, "uvx", 0, 0, 1.0f, 0, 0, -1, "󰺩" },
+  { NULL, "rtk", 0, 0, 1.0f, 0, 0, -1, "󰺩" },
+  { NULL, "me3", 0, 0, 1.0f, 0, 0, -1, "󰺩" },
+  { NULL, "lite", 0, 0, 1.0f, 0, 0, -1, "󰺩" },
+  { NULL, "distro", 0, 0, 1.0f, 0, 0, -1, "" },
+  { NULL, "dotenv", 0, 0, 1.0f, 0, 0, -1, "󰺩" },
+  { NULL, "env", 0, 0, 1.0f, 0, 0, -1, "󰺩" },
+
+  /* browsers last: id-match always wins over any page-title match */
+  { "waterfox", NULL, 0, 0, 1.0f, 0, 0, -1, "󰈹" },
+  { "chromium", NULL, 0, 0, 1.0f, 0, 0, -1, "󰊯" },
+  { "firefox", NULL, 0, 0, 1.0f, 0, 0, -1, "" },
 };
 
 /* layouts: tile, floating, monocle */
@@ -75,7 +217,7 @@ static const struct xkb_rule_names xkb_rules = {
   .model = "abnt2",
   .layout = "br",
   .variant = NULL,
-  .options = "caps:escape", /* keyboard-warrior: CapsLock is Escape */
+  .options = NULL, /* caps2esc handled at input level via interception-caps2esc */
 };
 
 /* trackpad */
@@ -141,9 +283,9 @@ static const char *volumedown[]
     = { "wpctl", "set-volume", "@DEFAULT_AUDIO_SINK@", "5%-", NULL };
 static const char *volumeup[]
     = { "wpctl", "set-volume", "@DEFAULT_AUDIO_SINK@", "5%+", NULL };
-static const char *playpause[] = { "playerctl", "play-pause", NULL };
-static const char *playnext[] = { "playerctl", "next", NULL };
-static const char *playprev[] = { "playerctl", "previous", NULL };
+static const char *audioplay[] = { "playerctl", "-p", "youtui", "play-pause", NULL };
+static const char *audionext[] = { "playerctl", "-p", "youtui", "next", NULL };
+static const char *audioprev[] = { "playerctl", "-p", "youtui", "previous", NULL };
 
 /* screenshots */
 static const char *screenshot_full[] = { "dwl-screenshot", "full", NULL };
@@ -238,15 +380,18 @@ static const Key keys[] = {
   { 0, XKB_KEY_XF86MonBrightnessDown, spawn, { .v = brightnessdown } },
   { 0, XKB_KEY_XF86MonBrightnessUp, spawn, { .v = brightnessup } },
 
-  /* volume - FN+F6/F7/F8 (media keys only, no plain F-keys) */
+  /* volume - F6 mute / F7 down / F8 up + media keys */
+  { 0, XKB_KEY_F6, spawn, { .v = volumemute } },
+  { 0, XKB_KEY_F7, spawn, { .v = volumedown } },
+  { 0, XKB_KEY_F8, spawn, { .v = volumeup } },
   { 0, XKB_KEY_XF86AudioMute, spawn, { .v = volumemute } },
   { 0, XKB_KEY_XF86AudioLowerVolume, spawn, { .v = volumedown } },
   { 0, XKB_KEY_XF86AudioRaiseVolume, spawn, { .v = volumeup } },
 
-  /* media control - playerctl */
-  { 0, XKB_KEY_XF86AudioPlay, spawn, { .v = playpause } },
-  { 0, XKB_KEY_XF86AudioNext, spawn, { .v = playnext } },
-  { 0, XKB_KEY_XF86AudioPrev, spawn, { .v = playprev } },
+  /* media control - youtui */
+  { 0, XKB_KEY_XF86AudioPlay, spawn, { .v = audioplay } },
+  { 0, XKB_KEY_XF86AudioNext, spawn, { .v = audionext } },
+  { 0, XKB_KEY_XF86AudioPrev, spawn, { .v = audioprev } },
 
   /* screenshots */
   { MODKEY, XKB_KEY_s, spawn, { .v = screenshot_area } },

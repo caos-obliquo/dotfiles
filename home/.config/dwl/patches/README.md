@@ -17,6 +17,12 @@ Apply with `patch -p1 < patches/<name>/<name>.patch` from the repo root, then
 | `movestack` | `Super+Shift+J/K` reorder stack | dwl-patches 0.8 |
 | `warpcursor` | Cursor follows keyboard focus | dwl-patches (style-normalized) |
 | `alwayscenter` | Floating windows spawn centered | dwl-patches (extended) |
+| `bar` | Native status bar (sewn's dwl bar clone): tags, layout symbol, title, status via stdin with `^fg()`/`^bg()` markup, click regions | dwl-patches (sewn) |
+| `bar-systray` | StatusNotifier system tray on the bar (DBus); left-click activate, right-click menu via `dmenucmd` | dwl-patches (vetu104), ported 0.7→0.8-dev |
+| `swallow` | Terminal swallow: child clients take over the terminal's slot (terminal hidden); `Mod+a` toggle, `Mod+Shift+a` auto-swallow | dwl-patches (Nikita Ivanov), hand-merged to 0.8-dev |
+| `gaps` | Tiled window gaps + `smartgaps`; `Mod+Shift+g` toggle | dwl-patches (peesock), ported to 0.8-dev |
+| `unclutter` | Auto-hide idle cursor after `cursor_timeout` seconds | dwl-patches (nate zhou) |
+| `bottomstack` | `bstack`/`bstackhoriz` layouts (`TTT`, `===`); `Mod+u` / `Mod+Shift+U` | dwl-patches (nate zhou) |
 
 ## Notes
 

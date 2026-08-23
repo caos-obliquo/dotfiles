@@ -1,6 +1,6 @@
 # wmenu-caos
 
-dmenu-style Wayland picker with image thumbnail previews and dwl-IPC
+dmenu-style Wayland picker with image thumbnail previews and dwl bar-style
 positioning. Fork of [wmenu](https://sr.ht/~adnano/wmenu/), tuned for use with
 [dwl](https://codeberg.org/dwl/dwl).
 
@@ -10,12 +10,13 @@ positioning. Fork of [wmenu](https://sr.ht/~adnano/wmenu/), tuned for use with
   image. The PNG is scaled to 128px on its longest side and drawn vertically
   centered in a 160px row; the `[img:]` prefix is stripped before the selection
   is printed to stdout, so callers receive the plain text line.
-- `-t` top-center (title-bar) positioning: reads the dwlb active-monitor
-  geometry from `/tmp/dwlb-geometry` when present, so the bar overlays the
-  correct monitor.
+- `-t` top-center (title-bar) positioning: reads the dwl bar geometry via the
+  dwl-ipc protocol (`bar_geometry` event) and overlays the bar's title area as
+  a pill. On an empty workspace (no focused client) dwl reports no pill, so the
+  menu spawns dark at the title start instead of covering the status icons.
 - `-c` centered positioning.
 - Vertical lists page with arrow keys: `-l` entries per page, image rows 160px tall.
-- dwlb-matching color defaults in `config.h`.
+- dwl bar-matching color defaults in `config.h`.
 
 ## Requirements
 
@@ -107,12 +108,18 @@ this protocol to show clipboard image history:
 
 ## Configuration
 
-Colors live in `config.h` (tracked; defaults match the dwlb active-monitor
-palette):
+Colors live in `config.h` (tracked; defaults match the dwl bar palette):
 
-	dwlb_middle_bg    bar mode (-t) background, #RRGGBBAA
-	dwlb_middle_fg    bar mode (-t) foreground
-	dwlb_bar_height   bar mode (-t) height in pixels
+	bar_bg            standalone background, #RRGGBBAA (dark, empty workspace)
+	bar_fg            standalone foreground
+	bar_sel_bg        selection background (purple)
+	bar_sel_fg        selection foreground
+	bar_border        border (same as bg → flat)
+	bar_pill_bg       on-bar pill background (-t, dwl IPC active)
+	bar_pill_fg       on-bar pill foreground
+	bar_pill_sel_bg   on-bar pill selection background
+	bar_pill_sel_fg   on-bar pill selection foreground
+	wmenu_width       -t menu width in pixels
 
 Edit `config.h` and rebuild.
 
@@ -122,20 +129,3 @@ Edit `config.h` and rebuild.
 - [wclipmenu](https://github.com/caos-obliquo/wclipmenu): consumer of the
   `[img:]` protocol
 - [dwl](https://codeberg.org/dwl/dwl): the window manager this targets
-
-## caos fork additions
-
-- **`POSITION_TOP_CENTER` pill over the dwl bar** (`-t` / `wmenu-run -t`,
-  dwl keybind `Super+d`): subscribes to `zdwl_ipc_manager_v2` and repositions
-  onto the `bar_geometry` event dwl sends on every bar draw. Margins are set
-  so the pill sits exactly over the bar's **middle title area**
-  (left = `middle_x`, right = rest). Height = bar height + list rows, and is
-  drift-free across redraws (list height captured after render).
-- **Colors from IPC**: the pill adopts dwl's `SchemeNorm` bg/fg from the
-  event (normal/prompt bg = bar bg; normal/prompt fg = bar fg; selection
-  colors swapped), so it always matches the bar.
-- **No geometry files**: the old `/tmp/dwl-bar-geometry` file fallback was
-  removed — IPC is the only positioning path. Without IPC, `-t` falls back
-  to a centered `wmenu_width` window.
-- **Full event listeners**: all `zdwl_ipc_output_v2` events have registered
-  (noop) listeners — libwayland aborts on any NULL listener slot.

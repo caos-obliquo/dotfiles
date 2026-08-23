@@ -2,8 +2,8 @@
 
 One key per app: **focus an already-running client, or spawn it if absent**.
 
-`Super+b` → `firefox`: existing firefox window gets focused (tag view switches
-to it), otherwise firefox starts.
+`Super+b` → `waterfox`: existing waterfox window gets focused (tag view switches
+to it), otherwise waterfox starts.
 
 Source: [dwl-patches spawnorfocus](https://codeberg.org/dwl/dwl-patches/src/branch/main/patches/spawnorfocus)
 Author: GravityShark, Ben Collerson, clicseo, wochap, Louis-Michel Raynauld
@@ -14,7 +14,9 @@ Applied: in-tree (see `spawnorfocus()` in dwl.c)
 Commands bound to `spawnorfocus`:
 
 ```c
-{ "firefox", "firefox", NULL }  /* cmd, needle, terminator */
+{ "waterfox", "Waterfox", NULL }  /* cmd, needle, terminator */
+- needle is matched case-sensitively against app_id/title, so it must match
+  the app's actual casing: Waterfox uses app_id "Waterfox".
 ```
 
 - 2nd element = substring matched against `app_id`/`title` (`strstr`).
@@ -27,7 +29,7 @@ Commands bound to `spawnorfocus`:
 ## Config (this fork)
 
 ```c
-static const char *browsercmd[] = { "firefox", "firefox", NULL };
+static const char *browsercmd[] = { "waterfox", "Waterfox", NULL };
 { MODKEY, XKB_KEY_b, spawnorfocus, { .v = browsercmd } },
 ```
 
@@ -50,4 +52,4 @@ stays a plain `spawn` — new terminals should always open, not re-focus.
 ## Verify
 
 - Build: clean (`-Wall -Wextra -Werror=*`).
-- Manual: open firefox → `Super+b` focuses it; close it → `Super+b` reopens.
+- Manual: open waterfox → `Super+b` focuses it; close it → `Super+b` reopens.

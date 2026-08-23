@@ -1,0 +1,76 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # need full history + tags for major-bump detection
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            meson \
+            ninja-build \
+            libcairo2-dev \
+            libpango1.0-dev \
+            libwayland-dev \
+            wayland-protocols \
+            libxkbcommon-dev
+
+      - name: Build
+        run: |
+          meson setup build
+          ninja -C build
+
+      - name: Package artifact
+        run: |
+          VER="${GITHUB_REF_NAME#v}"
+          mkdir -p /tmp/dist
+          tar -czf "/tmp/dist/wmenu-caos-${VER}.tar.gz" \
+            build/wmenu build/wmenu-run README.md CHANGELOG.md config.h
+
+      # Major version bump (v1.x, v2.x, ...) -> draft for human review.
+      # Minor/patch bumps -> published immediately.
+      - name: Determine release type
+        id: type
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          CUR_MAJOR="${TAG#v}"; CUR_MAJOR="${CUR_MAJOR%%.*}"
+          PREV="$(git tag --sort=-v:refname \
+                  | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' \
+                  | grep -v "^${TAG}$" | head -1)"
+          DRAFT=false
+          if [ -n "${PREV}" ]; then
+            P_MAJOR="${PREV#v}"; P_MAJOR="${P_MAJOR%%.*}"
+            [ "${CUR_MAJOR}" -gt "${P_MAJOR}" ] && DRAFT=true
+          fi
+          echo "draft=${DRAFT}" >> "${GITHUB_OUTPUT}"
+          echo "previous=${PREV:-none}"
+
+      - name: Extract changelog notes
+        run: |
+          VER="${GITHUB_REF_NAME#v}"
+          awk -v v="[${VER}]" '$0 ~ "^## " v {f=1; next} /^## / {f=0} f' \
+            CHANGELOG.md > /tmp/release-notes.md
+          if [ ! -s /tmp/release-notes.md ]; then
+            echo "_No changelog entry for ${VER}._" > /tmp/release-notes.md
+          fi
+
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          DRAFT=${{ steps.type.outputs.draft }}
+          gh release create "${GITHUB_REF_NAME}" \
+            --draft="${DRAFT}" \
+            --notes-file /tmp/release-notes.md \
+            /tmp/dist/*.tar.gz

@@ -77,6 +77,7 @@
 | Key | Action |
 |---|---|
 | `XF86MonBrightnessDown/Up` | `brightnessctl` -5% / +5% |
+| `F6` / `F7` / `F8` | `wpctl` mute / 5%- / 5%+ |
 | `XF86AudioMute` | `wpctl` mute toggle |
 | `XF86AudioLowerVolume/RaiseVolume` | `wpctl` 5%- / 5%+ |
 | `XF86AudioPlay` | `playerctl -p youtui` play/pause |
@@ -105,7 +106,7 @@
 | App | Rule |
 |---|---|
 | `wmenu-center` | floating, opacity 0.85 |
-| waterfox | tag 9 |
+| waterfox | no tag (`tags = 0`), opacity 1.0 |
 
 ## wmenu-caos — pickers
 

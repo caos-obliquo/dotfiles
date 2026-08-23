@@ -317,7 +317,11 @@ reposition_bar_geometry (struct wl_context *context)
 
   if (w == 0)
     {
-      return;
+      /* Empty workspace: no focused client, so dwl reports middle_width=0
+       * (dark theme signal). Position at the title start (middle_x) with
+       * the configured width instead of centering, so the menu does not
+       * cover the right-side status icons. */
+      w = wmenu_width;
     }
 
   /* prompt row matches the bar height; dropdown lines extend below */
@@ -378,12 +382,23 @@ ipc_output_bar_geometry (void *data, struct zdwl_ipc_output_v2 *ipc_output,
 
   if (context->menu->position == POSITION_TOP_CENTER && context->layer_surface)
     {
-      /* match the pill to the dwl bar's SchemeNorm colors */
       struct menu *menu = context->menu;
-      menu->normalbg = menu->promptbg = bg_color;
-      menu->normalfg = menu->promptfg = fg_color;
-      menu->selectionbg = fg_color;
-      menu->selectionfg = bg_color;
+      if (middle_width > 0)
+        {
+          /* dwl bar has status toggled on: purple pill over the bar */
+          menu->normalbg = menu->promptbg = bar_pill_bg;
+          menu->normalfg = menu->promptfg = bar_pill_fg;
+          menu->selectionbg = bar_pill_sel_bg;
+          menu->selectionfg = bar_pill_sel_fg;
+        }
+      else
+        {
+          /* empty bar / no status yet: dark standalone */
+          menu->normalbg = menu->promptbg = bar_bg;
+          menu->normalfg = menu->promptfg = bar_fg;
+          menu->selectionbg = bar_sel_bg;
+          menu->selectionfg = bar_sel_fg;
+        }
       reposition_bar_geometry (context);
       wl_surface_commit (context->surface);
       menu_invalidate (context->menu);
@@ -847,21 +862,36 @@ menu_run (struct menu *menu)
                                       context);
   wl_surface_commit (context->surface);
   wl_display_roundtrip (context->display);
-  menu_render_items (menu);
 
-  /* capture the dropdown list height once: menu_render_items overwrites
-     menu->height (prompt + lines) only when lines > 0, and reusing it here
-     keeps bar_geometry repositioning drift-free */
+  if (menu->position == POSITION_TOP_CENTER)
+    {
+      /* Second commit (no buffer): triggers the compositor's keyboard grab
+         and focus change, which makes dwl push bar_geometry. Without this,
+         the first rendered frame would use the fallback position (flash). */
+      wl_surface_commit (context->surface);
+      wl_display_roundtrip (context->display);
+    }
+
+  /* compute the dropdown list height once (no render yet) */
+  menu_compute_height (menu);
   if (menu->lines > 0)
     {
       context->ipc_list_height = menu->height - menu->line_height;
     }
+
   if (context->have_ipc_geometry && context->layer_surface)
     {
+      /* position at the pill BEFORE the first render so the first visible
+         frame is already correct */
       reposition_bar_geometry (context);
+      /* commit + roundtrip so the compositor's configure for the new size
+         is acked before the first buffer commit (otherwise the buffer is
+         scaled to the previous size) */
       wl_surface_commit (context->surface);
-      menu_invalidate (menu);
+      wl_display_roundtrip (context->display);
     }
+
+  menu_render_items (menu);
 
   struct pollfd fds[] = {
     { wl_display_get_fd (context->display), POLLIN },
