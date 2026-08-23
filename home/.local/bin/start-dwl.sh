@@ -1,9 +1,5 @@
 #!/bin/bash
-# dwl session launcher — canonical pattern (dotfiles 829c84e):
-# dwlb IS dwl's -s child (reads dwl status protocol from stdin, renders bar).
-# wawa (wallpaper) runs alongside it in the same -s command.
-pkill -9 dwlb 2>/dev/null
-pkill -9 -f dwlb-status 2>/dev/null
+# dwl session launcher — wallpaper + colored status feed (^fg markup, piped into dwl stdin).
 pkill -9 wawa 2>/dev/null
 export PATH="$HOME/.local/bin:/usr/local/bin:$PATH"
 export XDG_SESSION_TYPE=wayland
@@ -21,7 +17,6 @@ export DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$UID/bus"
     kanshi &
     widle -t 300 wlock &
     playerctl-daemon.sh &
-    ~/.local/bin/dwlb-status.sh | dwlb -status-stdin all
 ) &
 export WLR_RENDERER=gles2
-exec dwl -s 'sh -c "wawa fill ~/walls/wall3.jpg & dwlb -no-ipc -no-hidden"'
+exec ~/.local/bin/dwl-status.sh | dwl -s 'sh -c "wawa fill ~/walls/wall5-16x10.jpg"'

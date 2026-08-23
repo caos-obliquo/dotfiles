@@ -16,6 +16,7 @@
 #include <xkbcommon/xkbcommon.h>
 
 #include "config.h"
+#include "dwl-ipc-unstable-v2-client-protocol.h"
 #include "menu.h"
 #include "pool-buffer.h"
 #include "render.h"
@@ -23,18 +24,6 @@
 #include "wlr-layer-shell-unstable-v1-client-protocol.h"
 #include "xdg-activation-v1-client-protocol.h"
 
-static bool
-read_bar_geometry (uint32_t *left, uint32_t *width, uint32_t *height, uint32_t *bg_color, uint32_t *fg_color)
-{
-  FILE *f = fopen ("/tmp/dwlb-geometry", "r");
-  if (!f)
-    return false;
-
-  int result = fscanf (f, "%u %u %u %x %x", left, width, height, bg_color, fg_color);
-  fclose (f);
-
-  return result == 5;
-}
 // A Wayland output.
 struct output
 {
@@ -123,6 +112,17 @@ struct wl_context
   struct zwlr_layer_surface_v1 *layer_surface;
   struct wl_data_offer *data_offer;
   struct output *output;
+
+  // dwl IPC (dwl-ipc-unstable-v2): bar geometry for launcher positioning.
+  struct zdwl_ipc_manager_v2 *ipc_manager;
+  struct zdwl_ipc_output_v2 *ipc_output;
+  uint32_t ipc_middle_x;
+  uint32_t ipc_middle_width;
+  uint32_t ipc_bar_height;
+  uint32_t ipc_bg_color;
+  uint32_t ipc_fg_color;
+  bool have_ipc_geometry;
+  int ipc_list_height;
 
   struct pool_buffer buffers[2];
   struct pool_buffer *current;
@@ -249,6 +249,14 @@ context_destroy (struct wl_context *context)
   wl_surface_destroy (context->surface);
   zwlr_layer_surface_v1_destroy (context->layer_surface);
   xdg_activation_v1_destroy (context->activation);
+  if (context->ipc_output)
+    {
+      zdwl_ipc_output_v2_destroy (context->ipc_output);
+    }
+  if (context->ipc_manager)
+    {
+      zdwl_ipc_manager_v2_destroy (context->ipc_manager);
+    }
 
   wl_display_disconnect (context->display);
   free (context);
@@ -294,6 +302,132 @@ layer_surface_closed (void *data, struct zwlr_layer_surface_v1 *surface)
 static const struct zwlr_layer_surface_v1_listener layer_surface_listener = {
   .configure = layer_surface_configure,
   .closed = layer_surface_closed,
+};
+
+// Positions the TOP_CENTER layer surface over the dwl bar's middle title area.
+// Uses geometry received via the dwl-ipc bar_geometry event (logical px).
+static void
+reposition_bar_geometry (struct wl_context *context)
+{
+  struct menu *menu = context->menu;
+  struct output *output = context->output_list;
+  uint32_t w = context->ipc_middle_width;
+  uint32_t x = context->ipc_middle_x;
+  uint32_t h = context->ipc_bar_height;
+
+  if (w == 0)
+    {
+      return;
+    }
+
+  /* prompt row matches the bar height; dropdown lines extend below */
+  menu->height = (int)h + context->ipc_list_height;
+  menu->width = w;
+
+  zwlr_layer_surface_v1_set_size (context->layer_surface, w, menu->height);
+  zwlr_layer_surface_v1_set_anchor (context->layer_surface,
+                                    ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP
+                                    | ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT);
+
+  if (output && x + w <= (uint32_t)output->width / (uint32_t)output->scale)
+    {
+      /* Anchor at top-left, position exactly over the middle title area */
+      int logical_width = output->width / output->scale;
+      zwlr_layer_surface_v1_set_margin (context->layer_surface, 0,
+                                        logical_width - (int)x - (int)w, 0,
+                                        (int)x);
+    }
+  else
+    {
+      /* Fallback: clamp to output */
+      uint32_t box_width = w;
+      if (output && box_width > (uint32_t)output->width / (uint32_t)output->scale)
+        {
+          box_width = (uint32_t)output->width / (uint32_t)output->scale;
+        }
+      menu->width = box_width;
+      int left_margin = output ? ((output->width / output->scale) - (int)box_width) / 2 : 0;
+      zwlr_layer_surface_v1_set_margin (context->layer_surface, 0, -1, 0,
+                                        left_margin);
+    }
+}
+
+static void
+ipc_output_bar_geometry (void *data, struct zdwl_ipc_output_v2 *ipc_output,
+                         uint32_t middle_x, uint32_t middle_width,
+                         uint32_t bar_height, uint32_t bg_color,
+                         uint32_t fg_color)
+{
+  struct wl_context *context = data;
+
+  /* Reposition only when the geometry actually changed (dwl sends this on
+     every bar draw, which can be far more often than the status updates). */
+  if (context->have_ipc_geometry && context->ipc_middle_x == middle_x
+      && context->ipc_middle_width == middle_width
+      && context->ipc_bar_height == bar_height)
+    {
+      return;
+    }
+
+  context->ipc_middle_x = middle_x;
+  context->ipc_middle_width = middle_width;
+  context->ipc_bar_height = bar_height;
+  context->ipc_bg_color = bg_color;
+  context->ipc_fg_color = fg_color;
+  context->have_ipc_geometry = true;
+
+  if (context->menu->position == POSITION_TOP_CENTER && context->layer_surface)
+    {
+      /* match the pill to the dwl bar's SchemeNorm colors */
+      struct menu *menu = context->menu;
+      menu->normalbg = menu->promptbg = bg_color;
+      menu->normalfg = menu->promptfg = fg_color;
+      menu->selectionbg = fg_color;
+      menu->selectionfg = bg_color;
+      reposition_bar_geometry (context);
+      wl_surface_commit (context->surface);
+      menu_invalidate (context->menu);
+    }
+}
+
+static void
+ipc_output_ignore (void *data, struct zdwl_ipc_output_v2 *ipc_output)
+{
+}
+
+static void
+ipc_output_ignore_u32 (void *data, struct zdwl_ipc_output_v2 *ipc_output,
+                       uint32_t value)
+{
+}
+
+static void
+ipc_output_ignore_u32x4 (void *data, struct zdwl_ipc_output_v2 *ipc_output,
+                         uint32_t v1, uint32_t v2, uint32_t v3, uint32_t v4)
+{
+}
+
+static void
+ipc_output_ignore_str (void *data, struct zdwl_ipc_output_v2 *ipc_output,
+                       const char *str)
+{
+}
+
+/* libwayland aborts when dispatching an event with a NULL listener slot:
+   dwl pushes an initial event batch (active, tag, layout, ...) right after
+   get_output, so every event needs a handler. */
+static const struct zdwl_ipc_output_v2_listener ipc_output_listener = {
+  .toggle_visibility = ipc_output_ignore,
+  .active = ipc_output_ignore_u32,
+  .tag = ipc_output_ignore_u32x4,
+  .layout = ipc_output_ignore_u32,
+  .title = ipc_output_ignore_str,
+  .appid = ipc_output_ignore_str,
+  .layout_symbol = ipc_output_ignore_str,
+  .frame = ipc_output_ignore,
+  .fullscreen = ipc_output_ignore_u32,
+  .floating = ipc_output_ignore_u32,
+  .bar_geometry = ipc_output_bar_geometry,
 };
 
 static void
@@ -512,6 +646,12 @@ handle_global (void *data, struct wl_registry *registry, uint32_t name,
       context->activation
           = wl_registry_bind (registry, name, &xdg_activation_v1_interface, 1);
     }
+  else if (strcmp (interface, zdwl_ipc_manager_v2_interface.name) == 0)
+    {
+      uint32_t ipc_version = version < 2 ? version : 2;
+      context->ipc_manager = wl_registry_bind (
+          registry, name, &zdwl_ipc_manager_v2_interface, ipc_version);
+    }
 }
 
 static const struct wl_registry_listener registry_listener = {
@@ -554,6 +694,18 @@ menu_run (struct menu *menu)
   // Second roundtrip for seat and output listeners
   wl_display_roundtrip (context->display);
   assert (context->keyboard != NULL);
+
+  // dwl IPC: subscribe to bar_geometry for the output the menu will use.
+  // Only TOP_CENTER needs it; other positions keep their own sizing.
+  if (menu->position == POSITION_TOP_CENTER && context->ipc_manager
+      && context->output_list)
+    {
+      context->ipc_output = zdwl_ipc_manager_v2_get_output (
+          context->ipc_manager,
+          context->output ? context->output->output : context->output_list->output);
+      zdwl_ipc_output_v2_add_listener (context->ipc_output,
+                                       &ipc_output_listener, context);
+    }
 
   if (menu->output_name && !context->output)
     {
@@ -658,38 +810,33 @@ menu_run (struct menu *menu)
     }
   else if (menu->position == POSITION_TOP_CENTER)
     {
-      uint32_t bar_left = 0, bar_width = 0, bar_height = 0, bar_bg = 0, bar_fg = 0;
-
-      if (read_bar_geometry (&bar_left, &bar_width, &bar_height, &bar_bg, &bar_fg))
+      if (context->have_ipc_geometry)
         {
-          /* Auto-match the dwlb middle background + foreground colors */
-          if (bar_bg)
-            {
-              menu->normalbg = bar_bg;
-              menu->promptbg = bar_bg;
-            }
-          if (bar_fg)
-            {
-              menu->normalfg = bar_fg;
-              menu->promptfg = bar_fg;
-              /* inverted selection: dwlb fg on dwlb bg */
-              menu->selectionbg = bar_fg;
-              menu->selectionfg = bar_bg;
-            }
-          // Got geometry from dwlb - use it!
-          menu->height = bar_height;
-
-          // Get screen width from output
-
-          zwlr_layer_surface_v1_set_margin (layer_surface, 0, -1, 0,
-                                            bar_left); /* -1 means auto */
-          zwlr_layer_surface_v1_set_size (layer_surface, bar_width,
-                                          menu->height);
+          // dwl IPC bar_geometry already received: position over title area.
+          reposition_bar_geometry (context);
         }
       else
         {
-          // Fallback to config.h values
-          zwlr_layer_surface_v1_set_size (layer_surface, 0, menu->height);
+          /* No dwl IPC: fall back to centered wmenu_width. */
+          struct output *output = context->output_list;
+          if (output)
+            {
+              int logical_width = output->width / output->scale;
+              int box_width = wmenu_width;
+              if (box_width > logical_width)
+                box_width = logical_width;
+              menu->width = box_width;
+              int left_margin = (logical_width - box_width) / 2;
+              zwlr_layer_surface_v1_set_size (layer_surface, box_width,
+                                              menu->height);
+              zwlr_layer_surface_v1_set_margin (layer_surface, 0, -1, 0,
+                                                left_margin);
+            }
+          else
+            {
+              zwlr_layer_surface_v1_set_size (layer_surface, 0, menu->height);
+              zwlr_layer_surface_v1_set_margin (layer_surface, 0, 0, 0, 0);
+            }
         }
     }
 
@@ -701,6 +848,20 @@ menu_run (struct menu *menu)
   wl_surface_commit (context->surface);
   wl_display_roundtrip (context->display);
   menu_render_items (menu);
+
+  /* capture the dropdown list height once: menu_render_items overwrites
+     menu->height (prompt + lines) only when lines > 0, and reusing it here
+     keeps bar_geometry repositioning drift-free */
+  if (menu->lines > 0)
+    {
+      context->ipc_list_height = menu->height - menu->line_height;
+    }
+  if (context->have_ipc_geometry && context->layer_surface)
+    {
+      reposition_bar_geometry (context);
+      wl_surface_commit (context->surface);
+      menu_invalidate (menu);
+    }
 
   struct pollfd fds[] = {
     { wl_display_get_fd (context->display), POLLIN },
