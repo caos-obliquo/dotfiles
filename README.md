@@ -58,6 +58,7 @@ The keyboard is organized in **layers**, each with the same vim grammar:
 > Install vimium-c on Waterfox and the loop is closed.
 
 **Complete keybind reference:** [`docs/KEYBINDS.md`](docs/KEYBINDS.md)
+**Deployment script:** [`docs/AUTORICE-DEPLOY.md`](docs/AUTORICE-DEPLOY.md)
 
 ## Repository layout
 
@@ -66,7 +67,7 @@ home/.config/<tool>/   → mirrors ~/.config; each folder self-documenting
                         (README.md + config + keybinds inside)
 builds/<tool>/         → per-fork build configs (config.h, menu.c, …)
                         copied into the source before `make`
-docs/                  → cross-cutting references (KEYBINDS.md)
+docs/                  → cross-cutting references (KEYBINDS.md, AUTORICE-DEPLOY.md)
 autorice-deploy.sh     → one-shot: deploys home/, clones + builds every fork
 start-dwl.sh           → session entry (bar, wallpaper, clipboard, idle→lock)
 ```
@@ -96,6 +97,8 @@ Corrupt images degrade to plain text rows that stay pickable.
 ```bash
 ./autorice-deploy.sh
 ```
+
+[Full documentation →](docs/AUTORICE-DEPLOY.md)
 
 Clones every fork, copies the per-fork build configs from `builds/`, builds,
 installs, and copies `home/` → `~/`.

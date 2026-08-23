@@ -1,8 +1,8 @@
 # wmenu-caos
 
-dmenu-style Wayland picker with image thumbnail previews and dwlb-style
+dmenu-style Wayland picker with image thumbnail previews and dwl-IPC
 positioning. Fork of [wmenu](https://sr.ht/~adnano/wmenu/), tuned for use with
-[dwl](https://codeberg.org/dwl/dwl) and dwlb.
+[dwl](https://codeberg.org/dwl/dwl).
 
 ## Features
 
@@ -122,3 +122,20 @@ Edit `config.h` and rebuild.
 - [wclipmenu](https://github.com/caos-obliquo/wclipmenu): consumer of the
   `[img:]` protocol
 - [dwl](https://codeberg.org/dwl/dwl): the window manager this targets
+
+## caos fork additions
+
+- **`POSITION_TOP_CENTER` pill over the dwl bar** (`-t` / `wmenu-run -t`,
+  dwl keybind `Super+d`): subscribes to `zdwl_ipc_manager_v2` and repositions
+  onto the `bar_geometry` event dwl sends on every bar draw. Margins are set
+  so the pill sits exactly over the bar's **middle title area**
+  (left = `middle_x`, right = rest). Height = bar height + list rows, and is
+  drift-free across redraws (list height captured after render).
+- **Colors from IPC**: the pill adopts dwl's `SchemeNorm` bg/fg from the
+  event (normal/prompt bg = bar bg; normal/prompt fg = bar fg; selection
+  colors swapped), so it always matches the bar.
+- **No geometry files**: the old `/tmp/dwl-bar-geometry` file fallback was
+  removed — IPC is the only positioning path. Without IPC, `-t` falls back
+  to a centered `wmenu_width` window.
+- **Full event listeners**: all `zdwl_ipc_output_v2` events have registered
+  (noop) listeners — libwayland aborts on any NULL listener slot.

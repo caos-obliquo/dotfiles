@@ -3,6 +3,8 @@ config:
   show-name: true
 
 icons:
-  youtui: "󰓃"
+  zsh: "󰌓"
+  bash: "󰌓"
+  youtui: "󰑈"
   pi: "π"
   opencode: "󰚩"
