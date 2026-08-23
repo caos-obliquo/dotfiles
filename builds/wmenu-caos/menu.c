@@ -30,13 +30,13 @@ menu_create (menu_callback callback)
   struct menu *menu = calloc (1, sizeof (struct menu));
   menu->strncmp = strncmp;
   menu->font = "JetBrainsMono Nerd Font Mono 16";
-  menu->normalbg = dwlb_middle_bg;
-  menu->normalfg = dwlb_middle_fg;
-  menu->promptbg = dwlb_middle_bg;
-  menu->promptfg = dwlb_middle_fg;
-  menu->selectionbg = 0xbd93f9a6;
-  menu->selectionfg = 0x282a36ff;
-  menu->border = 0x888888ff;
+  menu->normalbg = bar_bg;
+  menu->normalfg = bar_fg;
+  menu->promptbg = bar_bg;
+  menu->promptfg = bar_fg;
+  menu->selectionbg = bar_sel_bg;
+  menu->selectionfg = bar_sel_fg;
+  menu->border = bar_border;
   menu->callback = callback;
   menu->test_surface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, 1, 1);
   menu->test_cairo = cairo_create (menu->test_surface);
@@ -519,13 +519,10 @@ menu_invalidate (struct menu *menu)
   menu->rendered = false;
 }
 
-// Render menu items.
+// Recalculate the menu height now that all items are loaded.
 void
-menu_render_items (struct menu *menu)
+menu_compute_height (struct menu *menu)
 {
-  calc_widths (menu);
-
-  /* recalculate height now that all items are loaded */
   if (menu->lines > 0)
     {
       menu->height = menu->line_height;
@@ -539,7 +536,14 @@ menu_render_items (struct menu *menu)
           menu->height += item->thumb_path ? 160 : menu->line_height;
         }
     }
+}
 
+// Render menu items. The caller is responsible for sizing the menu
+// (menu_compute_height / reposition_bar_geometry) before calling this.
+void
+menu_render_items (struct menu *menu)
+{
+  calc_widths (menu);
   match_items (menu);
   render_menu (menu);
 }

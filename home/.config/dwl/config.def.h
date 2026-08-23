@@ -6,26 +6,50 @@
 /* appearance */
 static const int sloppyfocus = 1; /* focus follows mouse */
 static const int bypass_surface_visibility = 0;
+static const int smartgaps = 0; /* 1 means no outer gap when there is only one window */
+static int gaps = 0; /* 1 means gaps between windows are added */
+static const unsigned int gappx = 6; /* gap pixel between windows */
 static const unsigned int borderpx = 0; /* window border width */
+static const unsigned int systrayspacing = 2; /* systray spacing */
+static const int showsystray = 1; /* 0 means no systray */
 
-/* Dracula theme */
+static const int showbar = 1; /* 0 means no bar */
+static const int topbar = 1; /* 0 means bottom bar */
+
+/* Dracula theme — bar colors: fg, bg, border (uint32_t ARGB, alpha baked in) */
 static const float rootcolor[] = COLOR (0x222222ff);
-static const float bordercolor[] = COLOR (0x444444ff);
-static const float focuscolor[] = COLOR (0xbd93f9ff); /* purple */
-static const float urgentcolor[] = COLOR (0xff0000ff);
-
 static const float fullscreen_bg[] = { 0.0f, 0.0f, 0.0f, 1.0f };
 static const float default_opacity = 1.0f;
+static const char *fonts[] = { "JetBrainsMono Nerd Font:size=16" };
+static uint32_t colors[][3] = {
+  /*               fg          bg          border    */
+  [SchemeNorm] = { 0xeeeeeeff, 0x222222ee, 0x444444ff }, /* bg 93% alpha */
+  [SchemeSel]  = { 0x1e1e2eff, 0xbd93f9dd, 0xbd93f9dd }, /* Dracula purple 87% alpha */
+  [SchemeUrg]  = { 0xff0000ff, 0xff0000cc, 0xff0000ff },
+};
 
-#define TAGCOUNT (9)
+/* tagging */
+static char *tags[] = { "1", "2", "3", "4", "5", "6", "7", "8", "9" };
 
 static int log_level = WLR_ERROR;
 
-/* window rules - gimp floating, waterfox on tag 9 */
+/* appicons - tag bar icons; set to 0 to use defaults */
+static char outer_separator_beg = '[';
+static char outer_separator_end = ']';
+static char inner_separator = ' ';
+static unsigned truncate_icons_after = 2;
+static char truncate_symbol[] = "...";
+
+/* window rules: appid, title, tags, isfloating, opacity, isterm, noswallow, monitor, appicon */
 static const Rule rules[] = {
-  { "wmenu-center", NULL, 0, 1, 0.85f, -1 },
-  { "Gimp_EXAMPLE", NULL, 0, 1, 1.0f, -1 },
-  { "waterfox_EXAMPLE", NULL, 1 << 8, 0, 1.0f, -1 },
+  { "foot", NULL, 0, 0, 1.0f, 1, 1, -1, "󰆍" },
+  { "wmenu-center", NULL, 0, 1, 0.85f, 0, 0, -1, NULL },
+  { "waterfox", NULL, 1 << 8, 0, 1.0f, 0, 0, -1, "󰈹" },
+  { "chromium", NULL, 0, 0, 1.0f, 0, 0, -1, "󰊯" },
+  { "steam", "steam", 0, 0, 1.0f, 0, 0, -1, "" },
+  { "youtui", NULL, 0, 0, 1.0f, 0, 0, -1, "󰑈" },
+  { NULL, "pipemixer", 0, 0, 1.0f, 0, 0, -1, "󰄠" },
+  { NULL, "bluetoothctl", 0, 0, 1.0f, 0, 0, -1, "" },
 };
 
 /* layouts: tile, floating, monocle */
@@ -33,6 +57,8 @@ static const Layout layouts[] = {
   { "[]=", tile },
   { "><>", NULL },
   { "[M]", monocle },
+  { "TTT", bstack },
+  { "===", bstackhoriz },
 };
 
 /* monitor defaults - works with multiple monitors */
@@ -71,6 +97,8 @@ static const double accel_speed = 0.0;
 static const enum libinput_config_tap_button_map button_map
     = LIBINPUT_CONFIG_TAP_MAP_LRM;
 
+static const int cursor_timeout = 5; /* hide cursor after N seconds idle */
+
 #define MODKEY WLR_MODIFIER_LOGO /* Super/Windows key */
 
 #define TAGKEYS(KEY, SKEY, TAG)                                               \
@@ -96,6 +124,7 @@ static const char *const autostart[]
 /* commands */
 static const char *termcmd[] = { "foot", NULL };
 static const char *menucmd[] = { "wmenu-run", "-t", NULL };
+static const char *dmenucmd[] = { "wmenu", NULL };
 static const char *browsercmd[] = { "waterfox", "Waterfox", NULL };
 static const char *dismisscmd[] = { "makoctl", "dismiss", NULL };
 static const char *passcmd[] = { "passmenu", NULL }; /* requires passmenu (pass) */
@@ -112,9 +141,9 @@ static const char *volumedown[]
     = { "wpctl", "set-volume", "@DEFAULT_AUDIO_SINK@", "5%-", NULL };
 static const char *volumeup[]
     = { "wpctl", "set-volume", "@DEFAULT_AUDIO_SINK@", "5%+", NULL };
-static const char *audioplay[] = { "playerctl", "-p", "youtui", "play-pause", NULL };
-static const char *audionext[] = { "playerctl", "-p", "youtui", "next", NULL };
-static const char *audioprev[] = { "playerctl", "-p", "youtui", "previous", NULL };
+static const char *playpause[] = { "playerctl", "play-pause", NULL };
+static const char *playnext[] = { "playerctl", "next", NULL };
+static const char *playprev[] = { "playerctl", "previous", NULL };
 
 /* screenshots */
 static const char *screenshot_full[] = { "dwl-screenshot", "full", NULL };
@@ -133,6 +162,7 @@ static const Key keys[] = {
   /* launchers */
   { MODKEY, XKB_KEY_d, spawn, { .v = menucmd } },
   { MODKEY, XKB_KEY_b, spawnorfocus, { .v = browsercmd } },
+  { MODKEY | WLR_MODIFIER_SHIFT, XKB_KEY_X, togglebar, { 0 } }, /* toggle bar (Shift+X: plain Cmd+X is Mac cut via PiKVM) */
   { MODKEY | WLR_MODIFIER_SHIFT, XKB_KEY_D, spawn, { .v = dismisscmd } },
   { MODKEY, XKB_KEY_g, spawn, { .v = passcmd } },
   { MODKEY | WLR_MODIFIER_SHIFT, XKB_KEY_Return, spawn, { .v = termcmd } },
@@ -166,12 +196,15 @@ static const Key keys[] = {
   { MODKEY, XKB_KEY_t, setlayout, { .v = &layouts[0] } }, /* tile */
   { MODKEY, XKB_KEY_f, setlayout, { .v = &layouts[1] } }, /* float */
   { MODKEY, XKB_KEY_m, setlayout, { .v = &layouts[2] } }, /* monocle */
+  { MODKEY, XKB_KEY_u, setlayout, { .v = &layouts[3] } }, /* bottomstack */
+  { MODKEY | WLR_MODIFIER_SHIFT, XKB_KEY_U, setlayout, { .v = &layouts[4] } }, /* bottomstack horizontal */
   { MODKEY, XKB_KEY_space, setlayout, { 0 } },            /* toggle layout */
   { MODKEY | WLR_MODIFIER_SHIFT,
     XKB_KEY_space,
     togglefloating,
     { 0 } },                                      /* toggle float */
   { MODKEY, XKB_KEY_e, togglefullscreen, { 0 } }, /* fullscreen */
+{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_G, togglegaps, { 0 } }, /* toggle gaps */
 
   /* window kill */
   { MODKEY, XKB_KEY_q, killclient, { 0 } },
@@ -210,10 +243,10 @@ static const Key keys[] = {
   { 0, XKB_KEY_XF86AudioLowerVolume, spawn, { .v = volumedown } },
   { 0, XKB_KEY_XF86AudioRaiseVolume, spawn, { .v = volumeup } },
 
-  /* media control - youtui */
-  { 0, XKB_KEY_XF86AudioPlay, spawn, { .v = audioplay } },
-  { 0, XKB_KEY_XF86AudioNext, spawn, { .v = audionext } },
-  { 0, XKB_KEY_XF86AudioPrev, spawn, { .v = audioprev } },
+  /* media control - playerctl */
+  { 0, XKB_KEY_XF86AudioPlay, spawn, { .v = playpause } },
+  { 0, XKB_KEY_XF86AudioNext, spawn, { .v = playnext } },
+  { 0, XKB_KEY_XF86AudioPrev, spawn, { .v = playprev } },
 
   /* screenshots */
   { MODKEY, XKB_KEY_s, spawn, { .v = screenshot_area } },
@@ -255,7 +288,17 @@ static const Key keys[] = {
 };
 
 static const Button buttons[] = {
-  { MODKEY, BTN_LEFT, moveresize, { .ui = CurMove } },
-  { MODKEY, BTN_MIDDLE, togglefloating, { 0 } },
-  { MODKEY, BTN_RIGHT, moveresize, { .ui = CurResize } },
+  { ClkLtSymbol, 0, BTN_LEFT, setlayout, { .v = &layouts[0] } },
+  { ClkLtSymbol, 0, BTN_RIGHT, setlayout, { .v = &layouts[2] } },
+  { ClkTitle, 0, BTN_MIDDLE, zoom, { 0 } },
+  { ClkStatus, 0, BTN_MIDDLE, spawn, { .v = termcmd } },
+  { ClkClient, MODKEY, BTN_LEFT, moveresize, { .ui = CurMove } },
+  { ClkClient, MODKEY, BTN_MIDDLE, togglefloating, { 0 } },
+  { ClkClient, MODKEY, BTN_RIGHT, moveresize, { .ui = CurResize } },
+  { ClkTagBar, 0, BTN_LEFT, view, { 0 } },
+  { ClkTagBar, 0, BTN_RIGHT, toggleview, { 0 } },
+  { ClkTagBar, MODKEY, BTN_LEFT, tag, { 0 } },
+  { ClkTagBar, MODKEY, BTN_RIGHT, toggletag, { 0 } },
+  { ClkTray, 0, BTN_LEFT, trayactivate, { 0 } },
+  { ClkTray, 0, BTN_RIGHT, traymenu, { 0 } },
 };
