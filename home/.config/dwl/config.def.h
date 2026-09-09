@@ -291,12 +291,7 @@ static const char *audioprev[] = { "playerctl", "-p", "youtui", "previous", NULL
 static const char *screenshot_full[] = { "dwl-screenshot", "full", NULL };
 static const char *screenshot_area[] = { "dwl-screenshot", "area", NULL };
 static const char *screenshot_window[] = { "dwl-screenshot", "window", NULL };
-static const char *screenshot_monitor[] = {
-  "sh", "-c",
-  "grim -l 0 -o $(swaymsg -t get_outputs | jq -r '.[] | select(.focused) | "
-  ".name') - | wl-copy",
-  NULL
-};
+static const char *screenshot_monitor[] = { "dwl-screenshot", "monitor", NULL };
 
 static const Key keys[] = {
   /* modifier                  key                 function        argument */

@@ -6,19 +6,37 @@
 
 case "$1" in
     full)
-        grim - | tee ~/Pictures/screenshot-$(date +%Y%m%d-%H%M%S).png | magick - -resize '1280x>' - | wl-copy --foreground -t image/png >/dev/null 2>&1 &
+        wshot -o ~/Pictures/screenshot-$(date +%Y%m%d-%H%M%S).png && \
+            magick ~/Pictures/screenshot-$(date +%Y%m%d-%H%M%S).png -resize '1280x>' - | \
+            wl-copy --foreground -t image/png >/dev/null 2>&1 &
         notify-send "Screenshot" "Full screen saved to history" 2>/dev/null || true
         ;;
     area)
-        grim -g "$(slurp)" - | tee ~/Pictures/screenshot-$(date +%Y%m%d-%H%M%S).png | magick - -resize '1280x>' - | wl-copy --foreground -t image/png >/dev/null 2>&1 &
+        wshot -r "$(slurp)" -o ~/Pictures/screenshot-$(date +%Y%m%d-%H%M%S).png && \
+            magick ~/Pictures/screenshot-$(date +%Y%m%d-%H%M%S).png -resize '1280x>' - | \
+            wl-copy --foreground -t image/png >/dev/null 2>&1 &
         notify-send "Screenshot" "Area saved to history" 2>/dev/null || true
         ;;
     window)
-        grim -g "$(slurp -d)" - | tee ~/Pictures/screenshot-$(date +%Y%m%d-%H%M%S).png | magick - -resize '1280x>' - | wl-copy --foreground -t image/png >/dev/null 2>&1 &
+        wshot -r "$(slurp)" -o ~/Pictures/screenshot-$(date +%Y%m%d-%H%M%S).png && \
+            magick ~/Pictures/screenshot-$(date +%Y%m%d-%H%M%S).png -resize '1280x>' - | \
+            wl-copy --foreground -t image/png >/dev/null 2>&1 &
         notify-send "Screenshot" "Window saved to history" 2>/dev/null || true
         ;;
+    monitor)
+        name=$(wlr-randr | awk '/^[^ ]/{name=$1} /focused/{print name; exit}')
+        if [ -n "$name" ]; then
+            wshot -m "$name" -o ~/Pictures/screenshot-$(date +%Y%m%d-%H%M%S).png && \
+                magick ~/Pictures/screenshot-$(date +%Y%m%d-%H%M%S).png -resize '1280x>' - | \
+                wl-copy --foreground -t image/png >/dev/null 2>&1 &
+            notify-send "Screenshot" "Monitor saved to history" 2>/dev/null || true
+        else
+            echo "Could not determine focused monitor" >&2
+            exit 1
+        fi
+        ;;
     *)
-        echo "Usage: $0 {full|area|window}"
+        echo "Usage: $0 {full|area|window|monitor}"
         exit 1
         ;;
 esac
