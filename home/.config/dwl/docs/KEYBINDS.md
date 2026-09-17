@@ -83,7 +83,7 @@ Source of truth: `config.h`. Layout: **ABNT2 (Brazilian)**, `MODKEY` = Super.
 
 | Key | Action |
 |---|---|
-| `Super+s` | area screenshot (grim → wl-copy) |
+| `Super+s` | area screenshot (wshot → wl-copy) |
 | `Super+Shift+S` | full screenshot |
 | `Super+Ctrl+s` | focused window |
 | `Super+Alt+s` | current monitor |

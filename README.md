@@ -120,7 +120,7 @@ kapd + the status feed, wawa wallpaper, kanshi (if installed), and the
 ## Dependencies
 
 ```bash
-pacman -S grim slurp wl-clipboard pamixer playerctl atuin pass \
+pacman -S wshot slurp wl-clipboard pamixer playerctl atuin pass \
           foot mako htop ccze zathura zathura-pdf-mupdf widle kanshi
 ```
 
@@ -140,3 +140,19 @@ wlr-layer-shell; meson+ninja). `wclipmenu image` needs ImageMagick.<br>
   `~/.config/youtui/config.toml` (gitignored).
 - PR workflow everywhere: feature branch → PR → merge; no direct pushes.
 - Per-fork patches live in the dwl repo's `patches/` (dwl-patches convention).
+
+## Known issues
+
+- **kapd CPU spin (OPEN, project to fix).** The Kaprica clipboard daemon
+  (`~/.local/bin/kapd`, via `kaprica.service`) wedges into a single-core
+  busy loop that survives `kill` (the service respawns it) and fires
+  mid-game. Proofs, 2026-09-07, HP EliteBook 645 G11:
+  - PIDs 2335 → 44060 → 48590, each 98-99% CPU on one core (C7 pinned at
+    93-100% in btop), package 77-88°C at only 15W with 11-18% total load.
+  - Memory flat at ~71MiB and IO 1.98GiB read / 321MiB written: CPU spin,
+    NOT a memory leak.
+  - `systemctl --user status kapd` → no such unit (daemon double-forks;
+    parent is systemd); `kaprica.service` stays `active (running)` throughout.
+  - Workaround: `systemctl --user stop kaprica` (stops respawns; clipboard
+    history unavailable until restarted). Toggle back on with
+    `systemctl --user start kaprica` when the fix lands.

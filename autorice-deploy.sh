@@ -160,14 +160,14 @@ install_wayland_stack() {
 install_applications() {
     section "Installing Applications"
 
-    sudo pacman -S --needed --noconfirm \
-        foot \
-        wl-clipboard \
-        grim slurp \
-        mako \
-        widle \
-        pamixer \
-        playerctl || error "Application install failed"
+sudo pacman -S --needed --noconfirm \
+            foot \
+            wl-clipboard \
+            wshot slurp \
+            mako \
+            widle \
+            pamixer \
+            playerctl || error "Application install failed"
 
     sudo pacman -S --needed --noconfirm \
         ttf-jetbrains-mono-nerd \
